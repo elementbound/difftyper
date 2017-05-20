@@ -4,6 +4,11 @@ if(!Array.prototype.empty)
         return this.length == 0;
     }
 
+// Convert words per minute into timeout between key presses
+function wpm(w) {
+    return 1000 / (w * 5 / 60);
+}
+
 class Typer {
     constructor() {
         // Set defaults for most
@@ -16,6 +21,7 @@ class Typer {
 
         this._at = 0;
         this._op = undefined;
+        this._state = 'stop';
     }
 
     newline() {
@@ -31,6 +37,39 @@ class Typer {
 
     rmline() {
         this.lines.splice(this._at);
+    }
+
+    add_diff(diffstr) {
+        this.ops.push(...Typer.parse_diff(diffstr));
+    }
+
+    run(rest = wpm(400)) {
+        this._state = 'run';
+
+        var f = function() {
+            if(this._state == 'run')
+                if(!this.type())
+                    this._state = 'stop';
+
+            if(this._state == 'run' || this._state == 'pause')
+                setTimeout(f, rest);
+        }
+
+        f();
+    }
+
+    pause() {
+        if(this._state == 'pause')
+            this._state = 'pause';
+    }
+
+    continue() {
+        if(this._state == 'pause')
+            this._state = 'run';
+    }
+
+    stop() {
+        this._state = 'stop';
     }
 
     type() {
@@ -49,7 +88,8 @@ class Typer {
     }
 
     _op_begin(op) {
-        ;
+        if(op[0] == 'add')
+            this.newline();
     }
 
     _op_do(op) {
@@ -75,7 +115,11 @@ class Typer {
             }
 
             if(!op[1])
-                this._op_consume(); 
+                this._op_consume();
+        }
+        else if(op[0] == 'skip') {
+            this._at++;
+            this._op_consume();
         }
     }
 
