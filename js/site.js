@@ -59,18 +59,24 @@ $(document).ready(function() {
     $(typer).on('finish', function(e) {
         $("#stop-tools").hide();
         $("#start-tools").show();
+        typer.clear();
+    });
+
+    $(typer).on('pause', function(e) {
+        $(".typer.pause").html('Continue');
+    });
+
+    $(typer).on('continue', function(e) {
+        $(".typer.pause").html('Pause');
     });
 
     // Pause typer:
     $(".typer.pause").each(function(idx, e) {
         $(this).click(function() {
-            if(typer.is_paused()) {
-                $(this).html('Pause');
+            if(typer.is_paused()) 
                 typer.continue();
-            } else {
-                $(this).html('Continue');
+            else
                 typer.pause();
-            }
         });
     });
 

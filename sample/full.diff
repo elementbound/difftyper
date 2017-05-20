@@ -33,10 +33,15 @@
 +        ;
 +    };
 +}
+!b
 @@ -4,6 +4,23 @@
+!b
  #include <array>
+!b
 
+!b
  namespace hunch {
+!b
 +    /**
 +        To approach this a bit more conceptionally:
 +
@@ -57,6 +62,7 @@
      class BaseMeshStream {
          public:
              const void* const data() const;
+!b
 @@ -0,0 +0,0 @@
  #pragma once
 

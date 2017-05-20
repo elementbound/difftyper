@@ -22,6 +22,8 @@ class Typer {
         this._at = 0;
         this._op = undefined;
         this._state = 'stop';
+
+        this._linepos = 'end';
     }
 
     newline() {
@@ -43,6 +45,7 @@ class Typer {
 
     rmline() {
         this.lines.splice(this._at, 1);
+        this._at = Math.min(this._at, this.lines.length-1);
     }
 
     add_diff(diffstr) {
@@ -68,13 +71,17 @@ class Typer {
     }
 
     pause() {
-        if(this._state == 'run')
+        if(this._state == 'run') {
             this._state = 'pause';
+            $(this).trigger('pause');
+        }
     }
 
     continue() {
-        if(this._state == 'pause')
+        if(this._state == 'pause') {
             this._state = 'run';
+            $(this).trigger('continue');
+        }
     }
 
     stop() {
@@ -105,16 +112,39 @@ class Typer {
 
         this._op_do(this._op);
 
-        let lines = this.lines.slice();
-        lines[this._at] = '[' + lines[this._at] + ']';
-        $(this).trigger('present', [lines]);
+        let highlight = 'pipe';
+
+        if(highlight == 'debug') {
+            let lines = this.lines.slice();
+            lines[this._at] = '[' + lines[this._at] + ']';
+            $(this).trigger('present', [lines]);
+        }
+        else if(highlight == 'pipe') {
+            let lines = this.lines.slice();
+            if(this._linepos == 'end')
+                lines[this._at] += '|';
+            else if(this._linepos == 'front')
+                lines[this._at] = '|' + lines[this._at];
+
+            $(this).trigger('present', [lines]);
+        }
+        else
+            $(this).trigger('present', [this.lines]);
 
         return true;
     }
 
     _op_begin(op) {
-        if(op[0] == 'add')
-            this.newline();
+        if(op[0] == 'add') {
+            if(this._linepos == 'end')
+                this.newline();
+            else if(this._linepos == 'front') {
+                this._at--;
+                this.newline();
+            }
+
+            this._linepos = 'end';
+        }
     }
 
     _op_do(op) {
@@ -144,11 +174,12 @@ class Typer {
         }
         else if(op[0] == 'skip') {
             this.skipline();
+            this._linepos = 'front';
             this._op_consume();
         }
         else if(op[0] == 'break') {
             this.pause();
-            this._op_consume(); 
+            this._op_consume();
         }
     }
 
@@ -179,7 +210,8 @@ class Typer {
                 console.log('Hunk matches:', p.exec(line));
 
                 let at = p.exec(line)[1];
-                at = parseInt(at);
+                at = parseInt(at) - 1;
+                at = Math.max(0, at); // clamp just in case
 
                 ret.push(['jumpto', at]);
             } else if (line.startsWith(' '))
