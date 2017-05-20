@@ -1,0 +1,35 @@
+@@ -0,0 +0,0
++#pragma once
++
++#include <vector>
++#include <array>
++
++namespace hunch {
++    class BaseMeshStream {
++        public:
++            const void* const data() const;
++    };
++
++    template <typename T, size_t C>
++    class MeshStream : public BaseMeshStream {
++        private:
++            std::vector<T> _buffer;
++
++        public:
++            typedef T  data_t;
++            typedef T* vertex_t;
++            typedef unsigned index_t;
++
++            const size_t components = C;
++
++            vertex_t vertex(index_t i);
++            data_t& component(index_t i);
++            data_t& component(index_t v, index_t c);
++
++            const void* const data() const;
++    };
++
++    class BaseMesh {
++        ;
++    };
++}
