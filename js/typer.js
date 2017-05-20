@@ -60,7 +60,7 @@ class Typer {
     }
 
     pause() {
-        if(this._state == 'pause')
+        if(this._state == 'run')
             this._state = 'pause';
     }
 
@@ -81,7 +81,7 @@ class Typer {
         return this._state == 'stop';
     }
 
-    is_pauses() {
+    is_paused() {
         return this._state == 'pause';
     }
 
