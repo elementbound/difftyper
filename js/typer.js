@@ -49,7 +49,35 @@ class Typer {
     }
 
     add_diff(diffstr) {
-        this.ops.push(...Typer.parse_diff(diffstr));
+        let diffs = Typer.parse_diff(diffstr);
+        let ops = [];
+
+        // Preprocess diff
+        // 1. Begin add mode - newline, go up
+        // 2. Add - just type everything
+        // 3. End add mode - go down
+
+        for(let i = 0; i < diffs.length; i++) {
+            let op = diffs[i];
+
+            if(i == 0) {
+                ops.push(op)
+                continue;
+            }
+
+            let prevop = diffs[i-1];
+            let nextop = diffs[i+1] || ['', ''];
+
+            if(op[0] == 'add' && prevop[0] != 'add')
+                ops.push(['add-begin']);
+
+            ops.push(op);
+
+            if(op[0] == 'add' && nextop[0] != 'add')
+                ops.push(['add-end']);
+        }
+
+        this.ops.push(...ops);
     }
 
     run(rest = wpm(400)) {
@@ -135,16 +163,7 @@ class Typer {
     }
 
     _op_begin(op) {
-        if(op[0] == 'add') {
-            if(this._linepos == 'end')
-                this.newline();
-            else if(this._linepos == 'front') {
-                this._at--;
-                this.newline();
-            }
-
-            this._linepos = 'end';
-        }
+        console.log(op);
     }
 
     _op_do(op) {
@@ -153,13 +172,12 @@ class Typer {
             this._op_consume();
         }
         else if(op[0] == 'del') {
-            // This is kinda hacky but hey.
-            if(this._linepos == 'front') {
-                this._at++;
-                this._linepos = 'end';
-            }
-            
             this.rmline();
+            this._op_consume();
+        }
+        else if(op[0] == 'add-begin') {
+            this.newline();
+            this._at--;
             this._op_consume();
         }
         else if(op[0] == 'add') {
@@ -178,6 +196,11 @@ class Typer {
             if(!op[1])
                 this._op_consume();
         }
+        else if(op[0] == 'add-end') {
+            this.rmline();
+            this.skipline();
+            this._op_consume();
+        }
         else if(op[0] == 'skip') {
             this.skipline();
             this._linepos = 'front';
@@ -191,7 +214,9 @@ class Typer {
     }
 
     _op_finish(op) {
-        ;
+        if(op[0] == 'add') {
+            this.newline();
+        }
     }
 
     _op_consume() {
