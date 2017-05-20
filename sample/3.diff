@@ -14,7 +14,8 @@
 
  namespace hunch {
      /**
-@@ -19,33 +26,231 @@ namespace hunch {
+@@ -19,33 +26,231 @@
+ namespace hunch {
          depends on the layout ( interleaved or sequential ). The buffer is automatically resized
          when it's full.
 

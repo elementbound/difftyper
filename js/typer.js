@@ -35,6 +35,12 @@ class Typer {
         }
     }
 
+    skipline() {
+        this._at++;
+        if(this.lines[this._at] == undefined)
+            this.lines[this._at] = '';
+    }
+
     rmline() {
         this.lines.splice(this._at, 1);
     }
@@ -135,7 +141,7 @@ class Typer {
                 this._op_consume();
         }
         else if(op[0] == 'skip') {
-            this._at++;
+            this.skipline();
             this._op_consume();
         }
     }

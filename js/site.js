@@ -15,12 +15,34 @@ $(document).ready(function() {
 
         typer.add_diff(diff);
         source.val('');
+
+        // Put debug into operations table
+        let tbody = $("#operations > tbody");
+        tbody.empty();
+
+        for(let i = 0; i < typer.ops.length; i++) {
+            let op = typer.ops[i];
+
+            let type = op[0];
+            let data = op.length > 1 ? op[1] : '';
+
+            let row = $('<tr>');
+            $('<td>')
+                .html(type)
+                .appendTo(row);
+
+            $('<td>')
+                .html(data)
+                .appendTo(row);
+
+            row.appendTo(tbody);
+        }
     });
 
     // Run typer buttons:
     $(".typer.run").click(function() {
         $('#code').text('');
-        typer.lines = []; 
+        typer.lines = [];
 
         typer.run(wpm(800));
 
