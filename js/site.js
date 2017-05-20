@@ -53,6 +53,8 @@ $(document).ready(function() {
     // Typer present
     $(typer).on('present', function(e, lines) {
         $('#code').text(lines.join('\n'));
+        $('#code').removeClass('prettyprinted');
+        PR.prettyPrint();
         // console.log(lines);
     });
 
