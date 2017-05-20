@@ -105,7 +105,9 @@ class Typer {
 
         this._op_do(this._op);
 
-        $(this).trigger('present', [this.lines]);
+        let lines = this.lines.slice();
+        lines[this._at] = '[' + lines[this._at] + ']';
+        $(this).trigger('present', [lines]);
 
         return true;
     }
@@ -144,6 +146,10 @@ class Typer {
             this.skipline();
             this._op_consume();
         }
+        else if(op[0] == 'break') {
+            this.pause();
+            this._op_consume(); 
+        }
     }
 
     _op_finish(op) {
@@ -178,6 +184,8 @@ class Typer {
                 ret.push(['jumpto', at]);
             } else if (line.startsWith(' '))
                 ret.push(['skip']);
+            else if (line.startsWith('!b')) // Custom
+                ret.push(['break']);
             else
                 ret.push(['skip']); // Skip unknown lines
         }
