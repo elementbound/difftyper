@@ -31,7 +31,7 @@ class Typer {
         }
         else {
             this._at++;
-            this.lines.splice(at, 0, '');
+            this.lines.splice(this._at, 0, '');
         }
     }
 
@@ -55,6 +55,7 @@ class Typer {
                 setTimeout(f, rest);
         }
 
+        f = f.bind(this);
         f();
     }
 
@@ -72,6 +73,18 @@ class Typer {
         this._state = 'stop';
     }
 
+    is_running() {
+        return this._state == 'run';
+    }
+
+    is_stopped() {
+        return this._state == 'stop';
+    }
+
+    is_pauses() {
+        return this._state == 'pause';
+    }
+
     type() {
         if(this._op == undefined) {
             if(this.ops.empty())
@@ -82,7 +95,9 @@ class Typer {
             }
         }
 
-        _op_do(this._op);
+        this._op_do(this._op);
+
+        $(this).trigger('present', [this.lines]);
 
         return true;
     }
@@ -128,23 +143,25 @@ class Typer {
     }
 
     _op_consume() {
-        _op_finish(this._op);
+        this._op_finish(this._op);
         this._op = undefined;
     }
 
     static parse_diff(diffstr) {
         let ret = [];
-        let difflines = diffstr.split('\n');
+        let difflines = diffstr.split(/\n|\r\n/);
+
+        console.log('Diff string is:\n', difflines);
 
         for (let i = 0; i < difflines.length; i++) {
             let line = difflines[i];
 
             if (line.startsWith('+'))
                 ret.push(['add', line.slice(1)]);
-            } else if (line.startsWith('-'))
+            else if (line.startsWith('-'))
                 ret.push(['del']);
             else if (line.startsWith('@@')) {
-                let p = /@@\s*-(\d+),(\d+)\s*+(\d+),(\d+)\s*@@*/i;
+                let p = /@@\s*-(\d+),(\d+)\s*\+(\d+),(\d+)\s*@@/i;
                 console.log('Hunk matches:', p.exec(line));
 
                 let at = p.exec(line)[1];
@@ -155,7 +172,7 @@ class Typer {
                 ret.push(['skip']);
         }
 
-        console.log(ret);
+        console.log(ret.toString());
         return ret;
     }
 }

@@ -1,4 +1,4 @@
-@@ -0,0 +0,0
+@@ -0,0 +0,0 @@
 +#pragma once
 +
 +#include <vector>
@@ -35,7 +35,7 @@
 +}
 @@ -4,6 +4,23 @@
  #include <array>
- 
+
  namespace hunch {
 +    /**
 +        To approach this a bit more conceptionally:
@@ -57,9 +57,9 @@
      class BaseMeshStream {
          public:
              const void* const data() const;
-@@ -0,0 +0,0
+@@ -0,0 +0,0 @@
  #pragma once
- 
+
 +#include <cstddef> // size_t
 +#include <cstring> // memcpy
 +#include <cassert> // static_assert
@@ -70,13 +70,14 @@
 +#include <buffer.hpp>
 +
 +#include <hunch/internal/opengl.h>
- 
+
  namespace hunch {
      /**
-@@ -19,33 +26,231 @@ namespace hunch {
+@@ -19,33 +26,231 @@
+ namespace hunch {
          depends on the layout ( interleaved or sequential ). The buffer is automatically resized
          when it's full.
- 
+
 +        These streams don't care about type, they accept arbitrary data. Some constraints apply,
 +        since each mesh stream must know it's data type ( e.g. GL_FLOAT ) and the number of
 +        components a vertex has. However, in the code, this is all represented by void*
@@ -189,7 +190,7 @@
 +                    _at += size_t(n) * ((_components * _item_size) + _stride);
 +            }
      };
- 
+
 -    template <typename T, size_t C>
 -    class MeshStream : public BaseMeshStream {
 -        private:
@@ -215,7 +216,7 @@
 +
 +         Thus, let's introduce vertex formats:
 +    */
- 
+
 +    class VertexFormat {
          public:
 -            typedef T  data_t;
@@ -225,11 +226,11 @@
 +                size_t components;
 +                size_t item_size;
 +                GLenum native_type;
- 
+
 -            const size_t components = C;
 +                inline size_t size() const {return item_size*components;}
 +            } item_t;
- 
+
 -            vertex_t vertex(index_t i);
 -            data_t& component(index_t i);
 -            data_t& component(index_t v, index_t c);
@@ -255,7 +256,7 @@
 +
 +        private:
 +            std::vector<item_t> _items;
- 
+
 -            const void* const data() const;
 +            template <typename T>
 +            GLenum _native_type() {static_assert(false, "Can't resolve generic type to native type");}
@@ -269,7 +270,7 @@
 +            template <> GLenum _native_type<float>()            {return GL_FLOAT; }
 +            template <> GLenum _native_type<double>()           {return GL_DOUBLE; }
      };
- 
+
 -    class BaseMesh {
 -        ;
 +    class InterleavedMesh {

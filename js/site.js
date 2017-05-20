@@ -1,4 +1,7 @@
 $(document).ready(function() {
+    /*** Init ***/
+    var typer = new Typer();
+
     /*** Wire up events ***/
     // Add frame buttons:
     $(".typer.add").each(function(idx, e) {
@@ -6,18 +9,24 @@ $(document).ready(function() {
         source = $(source);
 
         $(this).click(function() {
-            let diff = source.text();
-            // TODO: do something with diff
-            console.log("Adding diff: \n", diff);
-            source.text('');
+            let diff = source.val();
+
+            typer.add_diff(diff);
+            source.val('');
         })
     });
 
     // Run typer buttons:
     $(".typer.run").each(function(idx, e) {
         $(this).click(function() {
-            // TODO: Actually run it
-            console.log("Running typer");
+            // $("#code").text(typer.ops.join('\n'));
+            typer.run(wpm(800));
         })
     });
+
+    // Typer present
+    $(typer).on('present', function(e, lines) {
+        $('#code').text(lines.join('\n'));
+        // console.log(lines);
+    })
 });

@@ -1,5 +1,16 @@
-.diff.input {
-    max-height: 70vh;
+.diff.wrapper {
+    height: 70vh;
+}
+
+textarea.transparent.fill {
+    border: 0px;
+    padding: 0px;
+    margin: 0px;
+
+    background-color: rgba(0,0,0,0);
+
+    width: 100%;
+    height: 100%;
 }
 
 /* Placeholder support for contenteditable */
@@ -7,5 +18,5 @@
     content: attr(placeholder);
     display: block;
 
-    font-style: italic; 
+    font-style: italic;
 }

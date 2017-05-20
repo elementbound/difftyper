@@ -40,7 +40,10 @@
 
                 <div class="col-md-6">
                     Diffs:
-                    <pre id="frame" contenteditable="true" placeholder="Paste your diffs here" class="diff input"></pre>
+                    <div class="well diff wrapper">
+                        <textarea placeholder="Paste your diffs here"
+                                  class="transparent fill diff input" id="frame"></textarea>
+                    </div>
 
                     <button class="btn btn-default typer add" data-source="#frame">Add frame</button>
                     <button class="btn btn-primary typer run">Run</button>
