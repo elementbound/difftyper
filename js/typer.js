@@ -53,6 +53,8 @@ class Typer {
 
             if(this._state == 'run' || this._state == 'pause')
                 setTimeout(f, rest);
+            else
+            $(this).trigger('finish');
         }
 
         f = f.bind(this);
