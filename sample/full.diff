@@ -33,15 +33,10 @@
 +        ;
 +    };
 +}
-!b
 @@ -4,6 +4,23 @@
-!b
  #include <array>
-!b
 
-!b
  namespace hunch {
-!b
 +    /**
 +        To approach this a bit more conceptionally:
 +
@@ -62,7 +57,6 @@
      class BaseMeshStream {
          public:
              const void* const data() const;
-!b
 @@ -0,0 +0,0 @@
  #pragma once
 
@@ -70,20 +64,25 @@
 +#include <cstring> // memcpy
 +#include <cassert> // static_assert
 +#include <cstdlib> // malloc, free
+!b Skip vector
  #include <vector>
+!b -#include <array>
 -#include <array>
+!b
 +
 +#include <buffer.hpp>
 +
 +#include <hunch/internal/opengl.h>
+!b Added headers
 
  namespace hunch {
      /**
 @@ -19,33 +26,231 @@
- namespace hunch {
+!b Comment prep
          depends on the layout ( interleaved or sequential ). The buffer is automatically resized
          when it's full.
 
+!b Start comment
 +        These streams don't care about type, they accept arbitrary data. Some constraints apply,
 +        since each mesh stream must know it's data type ( e.g. GL_FLOAT ) and the number of
 +        components a vertex has. However, in the code, this is all represented by void*
@@ -93,9 +92,12 @@
 +        also provide convenience functions, so data doesn't have to be converted to an array
 +        first.
 +
+!b Done comment
          [1] - I mean all the vertex positions, then all the normals, then UVs, and so forth
      **/
+!b Boutta' remove
 -    class BaseMeshStream {
+!b Remove done, about to code
 +
 +    /**
 +        After some consideration, supporting multiple layouts was deemed unnecessary. Sure,
@@ -137,6 +139,7 @@
 +            // Size of a single component in bytes ( aka. sizeof(float) for a float3 )
 +            size_t _item_size;
 +
+!b Huge chunk added
          public:
 -            const void* const data() const;
 +            /**

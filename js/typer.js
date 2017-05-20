@@ -153,6 +153,12 @@ class Typer {
             this._op_consume();
         }
         else if(op[0] == 'del') {
+            // This is kinda hacky but hey.
+            if(this._linepos == 'front') {
+                this._at++;
+                this._linepos = 'end';
+            }
+            
             this.rmline();
             this._op_consume();
         }
@@ -179,6 +185,7 @@ class Typer {
         }
         else if(op[0] == 'break') {
             this.pause();
+            $(this).trigger('break', [op[1]]);
             this._op_consume();
         }
     }
@@ -216,8 +223,10 @@ class Typer {
                 ret.push(['jumpto', at]);
             } else if (line.startsWith(' '))
                 ret.push(['skip']);
-            else if (line.startsWith('!b')) // Custom
-                ret.push(['break']);
+            else if (line.startsWith('!b')) {
+                let val = /b(.*)/.exec(line)[1];
+                ret.push(['break', val]);
+            }
             else
                 ret.push(['skip']); // Skip unknown lines
         }

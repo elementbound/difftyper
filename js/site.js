@@ -59,6 +59,9 @@ $(document).ready(function() {
     $(typer).on('finish', function(e) {
         $("#stop-tools").hide();
         $("#start-tools").show();
+
+        $("#status").html('Code: ');
+
         typer.clear();
     });
 
@@ -70,10 +73,15 @@ $(document).ready(function() {
         $(".typer.pause").html('Pause');
     });
 
+    $(typer).on('break', function(e, name) {
+        console.log('break');
+        $("#status").html('Break: '+name);
+    });
+
     // Pause typer:
     $(".typer.pause").each(function(idx, e) {
         $(this).click(function() {
-            if(typer.is_paused()) 
+            if(typer.is_paused())
                 typer.continue();
             else
                 typer.pause();
