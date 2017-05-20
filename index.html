@@ -12,10 +12,11 @@
         <!-- Bootstrap 3.3.7 -->
         <link rel="stylesheet" href="css/bootstrap.min.css" />
         <link rel="stylesheet" href="css/bootstrap-theme.min.css" />
-        <script src="js/bootstrap.min.js" ></script>
+        <script src="js/bootstrap.min.js"></script>
 
         <link rel="stylesheet" href="css/pygments.css" />
         <link rel="stylesheet" href="css/site.css" />
+        <script src="js/site.js"></script>
 
         <title>difftyper</title>
     </head>
@@ -39,9 +40,11 @@
                 <div class="col-md-6">
                     Diffs:
                     <pre id="frame" contenteditable="true" placeholder="Paste your diffs here" class="diff input"></pre>
-                    <button class="btn btn-primary">Add frame</button>
+
+                    <button class="btn btn-default typer add" data-source="#frame">Add frame</button>
+                    <button class="btn btn-primary typer run">Run</button>
                 </div>
             </div>
-        <div>
+        </div>
     </body>
 </html>
