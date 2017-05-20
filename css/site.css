@@ -1,0 +1,11 @@
+.diff.input {
+    max-height: 70vh;
+}
+
+/* Placeholder support for contenteditable */
+[contenteditable=true]:empty:before {
+    content: attr(placeholder);
+    display: block;
+
+    font-style: italic; 
+}
