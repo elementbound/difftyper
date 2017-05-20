@@ -36,7 +36,7 @@ class Typer {
     }
 
     rmline() {
-        this.lines.splice(this._at);
+        this.lines.splice(this._at, 1);
     }
 
     add_diff(diffstr) {
@@ -172,9 +172,10 @@ class Typer {
                 ret.push(['jumpto', at]);
             } else if (line.startsWith(' '))
                 ret.push(['skip']);
+            else
+                ret.push(['skip']); // Skip unknown lines
         }
 
-        console.log(ret.toString());
         return ret;
     }
 }

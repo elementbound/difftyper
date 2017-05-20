@@ -20,6 +20,7 @@ $(document).ready(function() {
     // Run typer buttons:
     $(".typer.run").click(function() {
         $('#code').text('');
+        typer.lines = []; 
 
         typer.run(wpm(800));
 
