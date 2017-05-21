@@ -20,17 +20,18 @@
         <link rel="stylesheet" href="css/pygments.css" />
         <link rel="stylesheet" href="css/site.css" />
         <script src="js/typer.js"></script>
+        <script src="js/tree.js"></script>
         <script src="js/site.js"></script>
-        <script src="js/page/type.js"></script>
+        <script src="js/page/tree.js"></script>
 
-        <title>difftyper</title>
+        <title>tree</title>
     </head>
 
     <body>
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <h1>difftyper</h1>
+                    <h1>tree</h1>
                 </div>
             </div>
 
@@ -38,36 +39,19 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <span id="status">Code: </span>
-                    <pre id="code" class="prettyprint"> </pre>
-
-                    Operations:
-                    <table id="operations" class="table table-striped">
-                        <thead>
-                            <tr>
-                                <td>Type</td>
-                                <td>Value (optional)</td>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
+                    <table class="table table-striped fullwidth">
+                        <tr>
+                            <td>Kek</td>
+                        </tr>
                     </table>
                 </div>
 
                 <div class="col-md-6">
-                    Diffs:
-                    <div class="well diff wrapper">
-                        <textarea placeholder="Paste your diffs here"
-                                  class="transparent fill diff input" id="frame"></textarea>
-                    </div>
+                    <input id="file" type="text" class="form-control" placeholder="Path" />
+                    <br/>
 
-                    <div class="inline hidden" id="start-tools">
-                        <button class="btn btn-default typer add" data-source="#frame">Add frame</button>
-                        <button class="btn btn-primary typer run">Run</button>
-                    </div>
-                    <div class="inline hidden" id="stop-tools">
-                        <button class="btn btn-default typer pause">Pause</button>
-                        <button class="btn btn-primary typer stop">Stop</button>
-                    </div>
+                    <button class="btn btn-primary">Add entry</button>
+                    <button class="btn btn-default">Remove entry</button>
                 </div>
             </div>
         </div>
