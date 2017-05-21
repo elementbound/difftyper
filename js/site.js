@@ -44,7 +44,8 @@ $(document).ready(function() {
         $('#code').text('');
         typer.lines = [];
 
-        typer.run(wpm(800));
+        // typer.run(wpm(800));
+        typer.run(100); 
 
         $("#start-tools").hide();
         $("#stop-tools").show();

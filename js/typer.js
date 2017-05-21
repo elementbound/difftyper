@@ -120,7 +120,7 @@ class Typer {
         }
         else if(highlight == 'pipe') {
             let lines = this.lines.slice(); // Duplicate
-            lines[this._at] += '|';
+            lines[this._at] = lines[this._at] ? lines[this._at] + '|' : '|';
 
             $(this).trigger('present', [lines]);
         }
@@ -140,26 +140,29 @@ class Typer {
             this._op_consume();
         }
         else if(op[0] == 'del') {
+            if(this.lines[this._at] != op[1]) {
+                console.error('[del]', this.lines[this._at], '!=', op[1]);
+                this.ops = [];
+                this._op_consume();
+                return false;
+            }
+
             this.rmline();
             this._op_consume();
         }
         else if(op[0] == 'add') {
-            while(true) {
-                let c = op[1].charAt(0);
-                op[1] = op[1].slice(1);
-
-                this.lines[this._at] += c;
-
-                // Encountered something that is not a whitespace;
-                // stop typing for this frame
-                if(!/\s+/.test(c))
-                    break;
-            }
-
-            if(!op[1])
-                this._op_consume();
+            this._at++;
+            this.lines.splice(this._at, 0, op[1]);
+            this._op_consume();
         }
         else if(op[0] == 'skip') {
+            if(this.lines[this._at] != op[1]) {
+                console.error('[skp]', this.lines[this._at], '!=', op[1]);
+                this.ops = [];
+                this._op_consume();
+                return false;
+            }
+
             this.skipline();
             this._op_consume();
         }
@@ -171,9 +174,7 @@ class Typer {
     }
 
     _op_finish(op) {
-        if(op[0] == 'add') {
-            this.newline();
-        }
+        // pass
     }
 
     _op_consume() {
@@ -209,8 +210,10 @@ class Typer {
                 let val = /b(.*)/.exec(line)[1];
                 ret.push(['break', val]);
             }
-            else
-                ret.push(['skip']); // Skip unknown lines
+            else {
+                ret.push(['skip', line]); // Skip unknown lines
+                console.log('Weird line, assuming skip:', line);
+            }
         }
 
         return ret;
