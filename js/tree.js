@@ -1,5 +1,5 @@
 class TreeNode {
-    construct(value) {
+    constructor(value) {
         this.value = value;
         this._children = [];
         this._parent = undefined;
@@ -10,8 +10,12 @@ class TreeNode {
         return this._parent;
     }
 
+    depth() {
+        return this._depth; 
+    }
+
     // Iterator for direct children
-    children(reverse = false) {
+    * children(reverse = false) {
         for(let i = 0; i < this._children.length; i++) {
             if(!reverse)
                 yield this._children[i];
@@ -41,7 +45,7 @@ class TreeNode {
     }
 
     find_by_value(value) {
-        for(child of this.children())
+        for(let child of this.children())
             if(child.value == value)
                 return child;
 
@@ -54,13 +58,13 @@ class TreeNode {
 }
 
 class Tree {
-    construct() {
+    constructor() {
         this._root = new TreeNode();
     }
 }
 
 class FileTree extends Tree {
-    construct() {
+    constructor() {
         super();
         this._root.value = '/';
     }
@@ -78,6 +82,8 @@ class FileTree extends Tree {
             else
                 at = next;
         }
+
+        $(this).trigger('change');
     }
 
     remove(path) {
@@ -108,7 +114,9 @@ class FileTree extends Tree {
                 break;
         }
 
-        // Return how many nodes we removed 
+        $(this).trigger('change');
+
+        // Return how many nodes we removed
         return removed;
     }
 
@@ -117,7 +125,7 @@ class FileTree extends Tree {
     }
 
     // Generator function to return nodes depth-first
-    depth_first() {
+    * depth_first() {
         let queue = [this._root];
         let at = undefined;
 

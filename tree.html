@@ -39,19 +39,23 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <table class="table table-striped fullwidth">
-                        <tr>
-                            <td>Kek</td>
-                        </tr>
+                    <table id="tree" class="table table-striped">
+                        <thead>
+                            <tr><td>Files: </td></tr>
+                        </thead>
+
+                        <tbody>
+                            <tr><td>Root</td></tr>
+                        </tbody>
                     </table>
                 </div>
 
                 <div class="col-md-6">
-                    <input id="file" type="text" class="form-control" placeholder="Path" />
+                    <input id="entry" type="text" class="form-control" placeholder="Path" />
                     <br/>
 
-                    <button class="btn btn-primary">Add entry</button>
-                    <button class="btn btn-default">Remove entry</button>
+                    <button class="btn btn-primary" id="add-entry">Add entry</button>
+                    <button class="btn btn-default" id="remove-entry">Remove entry</button>
                     <br/>
 
                     <span id="response"></span>
