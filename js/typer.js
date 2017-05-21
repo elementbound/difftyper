@@ -48,37 +48,10 @@ class Typer {
 
     add_diff(diffstr) {
         let diffs = Typer.parse_diff(diffstr);
-        let ops = [];
-
-        // Preprocess diff
-        // 1. Begin add mode - newline, go up
-        // 2. Add - just type everything
-        // 3. End add mode - go down
-
-        for(let i = 0; i < diffs.length; i++) {
-            let op = diffs[i];
-
-            if(i == 0) {
-                ops.push(op)
-                continue;
-            }
-
-            let prevop = diffs[i-1];
-            let nextop = diffs[i+1] || ['', ''];
-
-            if(op[0] == 'add' && prevop[0] != 'add')
-                ops.push(['add-begin']);
-
-            ops.push(op);
-
-            if(op[0] == 'add' && nextop[0] != 'add')
-                ops.push(['add-end']);
-        }
-
-        this.ops.push(...ops);
+        this.ops.push(...diffs);
     }
 
-    run(rest = wpm(400)) {
+    run(rest = 1000/2) {
         this._state = 'run';
 
         var f = function() {
@@ -89,7 +62,7 @@ class Typer {
             if(this._state == 'run' || this._state == 'pause')
                 setTimeout(f, rest);
             else
-            $(this).trigger('finish');
+                $(this).trigger('finish');
         }
 
         f = f.bind(this);
@@ -140,7 +113,7 @@ class Typer {
 
         let highlight = 'pipe';
 
-        if(highlight == 'debug') {
+        if(highlight == 'bracket') {
             let lines = this.lines.slice();
             lines[this._at] = '[' + lines[this._at] + ']';
             $(this).trigger('present', [lines]);
@@ -170,11 +143,6 @@ class Typer {
             this.rmline();
             this._op_consume();
         }
-        else if(op[0] == 'add-begin') {
-            this.newline();
-            this._at--;
-            this._op_consume();
-        }
         else if(op[0] == 'add') {
             while(true) {
                 let c = op[1].charAt(0);
@@ -190,11 +158,6 @@ class Typer {
 
             if(!op[1])
                 this._op_consume();
-        }
-        else if(op[0] == 'add-end') {
-            this.rmline();
-            this.skipline();
-            this._op_consume();
         }
         else if(op[0] == 'skip') {
             this.skipline();
@@ -230,7 +193,7 @@ class Typer {
             if (line.startsWith('+'))
                 ret.push(['add', line.slice(1)]);
             else if (line.startsWith('-'))
-                ret.push(['del']);
+                ret.push(['del', line.slice(1)]);
             else if (line.startsWith('@@')) {
                 let p = /@@\s*-(\d+),(\d+)\s*\+(\d+),(\d+)\s*@@/i;
                 console.log('Hunk matches:', p.exec(line));
@@ -241,7 +204,7 @@ class Typer {
 
                 ret.push(['jumpto', at]);
             } else if (line.startsWith(' '))
-                ret.push(['skip']);
+                ret.push(['skip', line.slice(1)]);
             else if (line.startsWith('!b')) {
                 let val = /b(.*)/.exec(line)[1];
                 ret.push(['break', val]);
