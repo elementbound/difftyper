@@ -13,6 +13,8 @@ class Typer {
     constructor() {
         // Set defaults for most
         this.clear();
+
+        this.breaks_enabled = false;
     }
 
     clear() {
@@ -172,8 +174,11 @@ class Typer {
             this._op_consume();
         }
         else if(op[0] == 'break') {
-            this.pause();
-            $(this).trigger('break', [op[1]]);
+            if(this.breaks_enabled) {
+                this.pause();
+                $(this).trigger('break', [op[1]]);
+            }
+
             this._op_consume();
         }
     }
