@@ -22,8 +22,6 @@ class Typer {
         this._at = 0;
         this._op = undefined;
         this._state = 'stop';
-
-        this._linepos = 'end';
     }
 
     newline() {
@@ -148,11 +146,8 @@ class Typer {
             $(this).trigger('present', [lines]);
         }
         else if(highlight == 'pipe') {
-            let lines = this.lines.slice();
-            if(this._linepos == 'end')
-                lines[this._at] += '|';
-            else if(this._linepos == 'front')
-                lines[this._at] = '|' + lines[this._at];
+            let lines = this.lines.slice(); // Duplicate
+            lines[this._at] += '|';
 
             $(this).trigger('present', [lines]);
         }
@@ -203,7 +198,6 @@ class Typer {
         }
         else if(op[0] == 'skip') {
             this.skipline();
-            this._linepos = 'front';
             this._op_consume();
         }
         else if(op[0] == 'break') {
