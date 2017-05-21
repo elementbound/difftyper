@@ -2,7 +2,12 @@ class TreeNode {
     construct(value) {
         this.value = value;
         this._children = [];
+        this._parent = undefined;
         this._depth = 0;
+    }
+
+    parent() {
+        return this._parent;
     }
 
     // Iterator for direct children
@@ -42,6 +47,10 @@ class TreeNode {
 
         return undefined;
     }
+
+    is_empty() {
+        return this._children.length == 0;
+    }
 }
 
 class Tree {
@@ -69,6 +78,38 @@ class FileTree extends Tree {
             else
                 at = next;
         }
+    }
+
+    remove(path) {
+        path = FileTree.parse_path(path);
+        let at = this._root;
+
+        for(let i = 0; i < path.length; i++) {
+            let part = path[i];
+            let next = this._root.find_by_value(part);
+
+            // Path doesn't exist in tree, bail
+            if(next == undefined)
+                return false;
+        }
+
+        let removed = 0;
+        while(at != this._root) {
+            let next = at.parent();
+
+            next.remove_child(at);
+            ++removed;
+
+            // Check if parent is now empty
+            // If it is, remove it, otherwise stop
+            if(next.is_empty())
+                at = next;
+            else
+                break;
+        }
+
+        // Return how many nodes we removed 
+        return removed;
     }
 
     static parse_path(path) {
