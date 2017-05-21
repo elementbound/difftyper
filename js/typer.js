@@ -151,8 +151,13 @@ class Typer {
             this._op_consume();
         }
         else if(op[0] == 'add') {
-            this._at++;
-            this.lines.splice(this._at, 0, op[1]);
+            if(this._at >= this.lines.length) {
+                this._at++;
+                this.lines.splice(this._at, 0, op[1]);
+            } else {
+                this.lines.splice(this._at, 0, op[1]);
+                this._at++;
+            }
             this._op_consume();
         }
         else if(op[0] == 'skip') {
@@ -199,7 +204,7 @@ class Typer {
                 let p = /@@\s*-(\d+),(\d+)\s*\+(\d+),(\d+)\s*@@/i;
                 console.log('Hunk matches:', p.exec(line));
 
-                let at = p.exec(line)[1];
+                let at = p.exec(line)[3];
                 at = parseInt(at) - 1;
                 at = Math.max(0, at); // clamp just in case
 
