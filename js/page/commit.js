@@ -27,7 +27,7 @@ $(document).ready(function() {
             let row = $('<tr>').addClass('file');
 
             $('<td>')
-                .text(file.name)
+                .text(file.mode + ' ' + file.name)
                 .appendTo(row);
 
             $('<td>')

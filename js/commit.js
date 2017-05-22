@@ -30,13 +30,19 @@ class Commit {
 
             // Try to extract all file diffs
             let p = /diff\s*(\-\-git)?\sa\/(.+) b\/(.+)/;
+            let file = {
+                name: '',
+                diff: [],
+                mode: 'change'
+            };
+
             for(; i < lines.length; i++) {
                 let m = p.exec(lines[i]);
 
                 if(!m)
                     continue;
 
-                let filename = m[2];
+                file.name = m[2];
 
                 let j = i;
                 for(; j < lines.length; ++j) {
@@ -47,22 +53,25 @@ class Commit {
                     if(/^\+{3}|\-{3}/.test(lines[j]))
                         continue;
 
+                    if(/^new file mode/.test(lines[j]))
+                        file.mode = 'new';
+
+                    if(/^deleted file mode/.test(lines[j]))
+                        file.mode = 'delete'; 
+
                     // Found first line with valid diff
                     if(/^[ \-\+@]/.test(lines[j]))
                         break;
                 }
 
-                let filediff = [];
                 for(; j < lines.length; ++j)
                     if(/^[ \-\+@]/.test(lines[j]))
-                        filediff.push(lines[j]);
+                        file.diff.push(lines[j]);
                     else
                         break;
 
-                this.files.push({
-                    name: filename,
-                    diff: filediff.join('\n')
-                });
+                file.diff = file.diff.join('\n');
+                this.files.push(file);
 
                 i = j;
             }
