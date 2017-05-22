@@ -18,11 +18,16 @@ class Git:
         """
         Call git with the given command line arguments.
         """
-        return subprocess.run([self.command] + list(args), \
-                              stdout = subprocess.PIPE, \
-                              stderr = subprocess.PIPE, \
-                              universal_newlines = True,
-                              cwd = self.directory)
+        r = subprocess.run([self.command] + list(args),
+                            stdout = subprocess.PIPE,
+                            stderr = subprocess.PIPE,
+                            cwd = self.directory)
+
+        # Passing encoding throws an unexpected kwarg error, so here's a workaround
+        r.stdout = r.stdout.decode('utf-8')
+        r.stderr = r.stderr.decode('utf-8')
+
+        return r
 
     def commits(self):
         """
