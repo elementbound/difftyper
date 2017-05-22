@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}difftyper{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <ul>
+                {% for page in pages %}
+                    <li><a class='btn btn-primary' href='/{{ page }}'>{{ page }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

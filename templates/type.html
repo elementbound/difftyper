@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}type{% endblock %}
+
+{% block scripts %}
+    <script src="js/typer.js"></script>
+    <script src="js/page/type.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="row"> 
+        <div class="col-md-6">
+            <span id="status">Code: </span>
+            <pre id="code" class="prettyprint"> </pre>
+
+            Operations:
+            <table id="operations" class="table table-striped">
+                <thead>
+                    <tr>
+                        <td>Type</td>
+                        <td>Value (optional)</td>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            Diffs:
+            <div class="well diff wrapper">
+                <textarea placeholder="Paste your diffs here"
+                          class="transparent fill diff input" id="frame"></textarea>
+            </div>
+
+            <div class="inline hidden" id="start-tools">
+                <button class="btn btn-default typer add" data-source="#frame">Add frame</button>
+                <button class="btn btn-primary typer run">Run</button>
+            </div>
+            <div class="inline hidden" id="stop-tools">
+                <button class="btn btn-default typer pause">Pause</button>
+                <button class="btn btn-primary typer stop">Stop</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+        <!-- jQuery 3.1.1 -->
+        <script src="js/jquery-3.1.1.min.js" type="text/javascript"></script>
+
+        <!-- Bootstrap 3.3.7 -->
+        <link rel="stylesheet" href="css/bootstrap.min.css" />
+        <link rel="stylesheet" href="css/bootstrap-theme.min.css" />
+        <script src="js/bootstrap.min.js"></script>
+
+        <!-- Google prettify -->
+        <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+        <link rel="stylesheet" href="css/pygments.css" />
+        <link rel="stylesheet" href="css/site.css" />
+
+        <title>difftyper</title>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>difftyper</h1>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="row">
+            </div>
+        </div>
+    </body>
+</html>

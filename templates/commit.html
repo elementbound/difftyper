@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}commit{% endblock %}
+
+{% block scripts %}
+    <script src="js/commit.js"></script>
+    <script src="js/page/commit.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="row"> 
+        <div class="col-md-6">
+            <table class="table table-striped" id="commit-files">
+                <tr>
+                    <td>commit</td>
+                    <td id="commit-hash"></td>
+                </tr>
+
+                <tr>
+                    <td>Author: </td>
+                    <td id="commit-author"></td>
+                </tr>
+
+                <tr>
+                    <td>Message: </td>
+                    <td class="preserve-ws" id="commit-message"></td>
+                </tr>
+
+                <tr>
+                    <td>Changed files: </td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            Diff:
+            <div class="well diff wrapper">
+                <textarea placeholder="Paste your diffs here"
+                          class="transparent fill diff input" id="diff"></textarea>
+            </div>
+
+            <button class="btn btn-primary" id="diff-parse">Parse</button>
+        </div>
+    </div>
+{% endblock %}

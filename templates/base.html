@@ -19,48 +19,24 @@
 
         <link rel="stylesheet" href="css/pygments.css" />
         <link rel="stylesheet" href="css/site.css" />
-        <script src="js/typer.js"></script>
-        <script src="js/tree.js"></script>
         <script src="js/site.js"></script>
-        <script src="js/page/tree.js"></script>
+        {% block scripts %}{% endblock %}
 
-        <title>tree</title>
+        <title>{% block title %}difftyper{% endblock %}</title>
     </head>
 
     <body>
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <h1>tree</h1>
+                    <h1>{{ self.title() }}</h1>
                 </div>
             </div>
 
             <hr/>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <table id="tree" class="table table-striped">
-                        <thead>
-                            <tr><td>Files: </td></tr>
-                        </thead>
-
-                        <tbody>
-                            <tr><td>Root</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="col-md-6">
-                    <input id="entry" type="text" class="form-control" placeholder="Path" />
-                    <br/>
-
-                    <button class="btn btn-primary" id="add-entry">Add entry</button>
-                    <button class="btn btn-default" id="remove-entry">Remove entry</button>
-                    <br/>
-
-                    <span id="response"></span>
-                </div>
-            </div>
+            {% block content %}
+            {% endblock %}
         </div>
     </body>
 </html>
