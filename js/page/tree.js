@@ -1,7 +1,7 @@
 $(document).ready(function() {
     /** Init **/
     var tree = new FileTree();
-    tree.root().value = ''; 
+    tree.root().value = 'git:'; 
 
     /** Events **/
     $("#add-entry").click(function() {

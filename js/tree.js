@@ -132,8 +132,6 @@ class FileTree extends Tree {
     constructor() {
         super();
         this._root = new FileNode('/');
-
-        console.log('Constructor;', this._root);
     }
 
     add(path) {
@@ -164,9 +162,14 @@ class FileTree extends Tree {
             let part = path[i];
             let next = at.find_by_value(part);
 
+            console.log('Jumping to', part, '->', next);
             // Path doesn't exist in tree, bail
-            if(next == undefined)
+            if(next == undefined) {
+                console.log('Path doesn\'t exist, bailing');
                 return false;
+            }
+            else
+                at = next; 
         }
 
         let removed = 0;
@@ -184,9 +187,11 @@ class FileTree extends Tree {
                 break;
         }
 
+        this.root().sort();
         $(this).trigger('change');
 
         // Return how many nodes we removed
+        console.log('Removed', removed, 'nodes');
         return removed;
     }
 
