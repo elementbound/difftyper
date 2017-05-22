@@ -11,7 +11,7 @@ class TreeNode {
     }
 
     depth() {
-        return this._depth; 
+        return this._depth;
     }
 
     // Iterator for direct children
@@ -27,6 +27,7 @@ class TreeNode {
     add_child(child) {
         this._children.push(child);
         child._depth = this._depth + 1;
+        child._parent = this;
         return child;
     }
 
@@ -55,18 +56,82 @@ class TreeNode {
     is_empty() {
         return this._children.length == 0;
     }
+
+    children_count() {
+        return this._children.length;
+    }
+}
+
+class FileNode extends TreeNode {
+    sort(recursive=false) {
+        // Sort children alphabetically
+        this._children.sort();
+
+        // Then sort with directories ( branches ) first and files ( leaves ) second
+        let branches = [];
+        let leaves = [];
+
+        for(let c of this.children())
+            if(c.is_empty())
+                leaves.push(c);
+            else
+                branches.push(c);
+
+        this._children = [];
+        this._children.push(...branches);
+        this._children.push(...leaves);
+
+        if(recursive)
+            for(let c of this.children())
+                c.sort(true);
+    }
 }
 
 class Tree {
     constructor() {
         this._root = new TreeNode();
     }
+
+    * iterate(depth_first = true) {
+        let queue = [this._root];
+        let at = undefined;
+
+        while(queue.length) {
+            if(depth_first)
+                at = queue.pop();
+            else
+                at = queue.shift();
+
+            yield at;
+
+            // Iterate children in reverse order
+            for(let child of at.children(true))
+                queue.push(child);
+        }
+    }
+
+    // Generator function to return nodes depth-first
+    * depth_first() {
+        return this.iterate(true);
+    }
+
+    // Generator function to return nodes breadth-first
+    * breadth_first() {
+        return this.iterate(false);
+    }
+
+    // Return root node
+    root() {
+        return this._root;
+    }
 }
 
 class FileTree extends Tree {
     constructor() {
         super();
-        this._root.value = '/';
+        this._root = new FileNode('/');
+
+        console.log('Constructor;', this._root);
     }
 
     add(path) {
@@ -75,13 +140,16 @@ class FileTree extends Tree {
 
         for(let i = 0; i < path.length; i++) {
             let part = path[i];
-            let next = this._root.find_by_value(part);
+            let next = at.find_by_value(part);
 
             if(next == undefined)
-                at = at.add_child(new TreeNode(part));
+                at = at.add_child(new FileNode(part));
             else
                 at = next;
         }
+
+        // Sort nodes recursively
+        this._root.sort(true);
 
         $(this).trigger('change');
     }
@@ -92,7 +160,7 @@ class FileTree extends Tree {
 
         for(let i = 0; i < path.length; i++) {
             let part = path[i];
-            let next = this._root.find_by_value(part);
+            let next = at.find_by_value(part);
 
             // Path doesn't exist in tree, bail
             if(next == undefined)
@@ -122,20 +190,5 @@ class FileTree extends Tree {
 
     static parse_path(path) {
         return path.split('/');
-    }
-
-    // Generator function to return nodes depth-first
-    * depth_first() {
-        let queue = [this._root];
-        let at = undefined;
-
-        while(queue.length) {
-            at = queue.pop();
-            yield at;
-
-            // Iterate children in reverse order
-            for(let child of at.children(true))
-                queue.push(child);
-        }
     }
 }

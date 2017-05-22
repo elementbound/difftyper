@@ -15,10 +15,10 @@ $(document).ready(function() {
         let table = $("#tree>tbody");
         table.empty();
 
-        for(let node of tree.depth_first()) {
+        for(let node of tree.iterate()) {
             let row = $("<tr>");
             $("<td>")
-                .text(node.value + (node._children.length ? '/' : ''))
+                .text(node.value + (node.is_empty() ? '' : '/'))
                 .css("text-indent", (node.depth()*2) + "em")
                 .appendTo(row);
 
