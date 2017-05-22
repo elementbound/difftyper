@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}history{% endblock %}
+
+{% block scripts %}
+    <script src="js/commit.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-addon">Repository: </span>
+                <input class="form-control" type="text" id="repo-path" />
+                <span class="input-group-btn">
+                    <button class="btn btn-primary">Load</button>
+                </span>
+            </div>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <td>Commit</td>
+                        <td>Message</td>
+                        <td>Date</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <table class="table table-striped" id="commit-files">
+                <tr>
+                    <td>commit</td>
+                    <td id="commit-hash"></td>
+                </tr>
+
+                <tr>
+                    <td>Author: </td>
+                    <td id="commit-author"></td>
+                </tr>
+
+                <tr>
+                    <td>Message: </td>
+                    <td class="preserve-ws" id="commit-message"></td>
+                </tr>
+
+                <tr>
+                    <td>Changed files: </td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+{% endblock %}
