@@ -13,4 +13,7 @@ There's ``typer.js`` which takes a diff text ( produced by git ) and types out t
 Actually, it just puts there everything line by line, typing will be done later.
 
 Then we have ``tree.js`` which represents the repo's file tree. Files can be added and removed
-from it as the project history moves on. 
+from it as the project history moves on.
+
+``commit.js`` can parse the whole output of ``git show <COMMIT> --format=medium``. It stores
+general commit data ( author, hash, etc. ) and changes for each file. 
