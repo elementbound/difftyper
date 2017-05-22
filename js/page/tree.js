@@ -1,6 +1,7 @@
 $(document).ready(function() {
     /** Init **/
     var tree = new FileTree();
+    tree.root().value = ''; 
 
     /** Events **/
     $("#add-entry").click(function() {
@@ -15,7 +16,7 @@ $(document).ready(function() {
         let table = $("#tree>tbody");
         table.empty();
 
-        for(let node of tree.iterate()) {
+        for(let node of tree.depth_first()) {
             let row = $("<tr>");
             $("<td>")
                 .text(node.value + (node.is_empty() ? '' : '/'))

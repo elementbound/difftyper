@@ -112,12 +112,14 @@ class Tree {
 
     // Generator function to return nodes depth-first
     * depth_first() {
-        return this.iterate(true);
+        for(let i of this.iterate(true))
+            yield i;
     }
 
     // Generator function to return nodes breadth-first
     * breadth_first() {
-        return this.iterate(false);
+        for(let i of this.iterate(false))
+            yield i;
     }
 
     // Return root node
