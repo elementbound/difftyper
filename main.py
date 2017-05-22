@@ -1,10 +1,13 @@
 import flask
+import json
+from pathlib import Path
+from git import Git
 
 app = flask.Flask('difftyper')
 
 @app.route('/')
 def index():
-    return page('index') 
+    return page('index')
 
 @app.route('/<what>')
 def page(what):
@@ -23,6 +26,22 @@ def page(what):
         pass
 
     return flask.render_template(page, pages=mapping.keys())
+
+@app.route('/api/git/commits/<path:path>')
+def git_commits(path):
+    try:
+        git = Git(path)
+        return json.dumps({'commits': git.commits()}, indent=4)
+    except:
+        return json.dumps({'error': True})
+
+@app.route('/api/git/show/<commit>/<path:path>')
+def git_show(commit, path):
+    try:
+        git = Git(path)
+        return json.dumps({'commit': git.show(commit)}, indent=4)
+    except:
+        return json.dumps({'error': True})
 
 @app.route('/js/<path:path>')
 def serve_js(path):

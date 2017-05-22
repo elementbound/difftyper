@@ -5,7 +5,7 @@ class Git:
         """
         Init a git instance in the given directory. All functions will use this directory.
         """
-        self.directory = at
+        self.directory = str(at) # Accept pathlike objects
         self.command = 'git'
 
         # Check if we're in a git repo's directory
