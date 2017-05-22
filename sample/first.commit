@@ -1,0 +1,676 @@
+commit 22b53d26922274e03d275b73c40008934d7d1040
+Author: Gálffy Tamás <ezittgtx@gmail.com>
+Date:   Sat May 20 12:45:44 2017 +0300
+
+    Initial commit with some sample diffs
+
+diff --git a/sample/1.diff b/sample/1.diff
+new file mode 100644
+index 0000000..94fa7b1
+--- /dev/null
++++ b/sample/1.diff
+@@ -0,0 +1,35 @@
++@@ -0,0 +0,0
+++#pragma once
+++
+++#include <vector>
+++#include <array>
+++
+++namespace hunch {
+++    class BaseMeshStream {
+++        public:
+++            const void* const data() const;
+++    };
+++
+++    template <typename T, size_t C>
+++    class MeshStream : public BaseMeshStream {
+++        private:
+++            std::vector<T> _buffer;
+++
+++        public:
+++            typedef T  data_t;
+++            typedef T* vertex_t;
+++            typedef unsigned index_t;
+++
+++            const size_t components = C;
+++
+++            vertex_t vertex(index_t i);
+++            data_t& component(index_t i);
+++            data_t& component(index_t v, index_t c);
+++
+++            const void* const data() const;
+++    };
+++
+++    class BaseMesh {
+++        ;
+++    };
+++}
+diff --git a/sample/2.diff b/sample/2.diff
+new file mode 100644
+index 0000000..57ea6ac
+--- /dev/null
++++ b/sample/2.diff
+@@ -0,0 +1,24 @@
++@@ -4,6 +4,23 @@
++ #include <array>
++ 
++ namespace hunch {
+++    /**
+++        To approach this a bit more conceptionally:
+++
+++        Each mesh maintains an internal buffer ( possibly multiple buffers ).
+++        This data is then uploaded to the GPU for use. This buffer can have different layout
+++        based on how the vertex data is aligned - it can be interleaved or sequential[1].
+++
+++        A mesh has various streams, this makes up its vertex format. For example a float3 stream
+++        for position, a float2 stream for UVs, or an int1 stream for bone indices. As it is
+++        apparent, each stream has a data type ( float, int, etc. ) and a component count.
+++
+++        The stream writes one vertex at a time into its parent's buffer. How this write happens
+++        depends on the layout ( interleaved or sequential ). The buffer is automatically resized
+++        when it's full.
+++
+++        [1] - I mean all the vertex positions, then all the normals, then UVs, and so forth
+++    **/
++     class BaseMeshStream {
++         public:
++             const void* const data() const;
+diff --git a/sample/3.diff b/sample/3.diff
+new file mode 100644
+index 0000000..1978e15
+--- /dev/null
++++ b/sample/3.diff
+@@ -0,0 +1,264 @@
++@@ -0,0 +0,0
++ #pragma once
++ 
+++#include <cstddef> // size_t
+++#include <cstring> // memcpy
+++#include <cassert> // static_assert
+++#include <cstdlib> // malloc, free
++ #include <vector>
++-#include <array>
+++
+++#include <buffer.hpp>
+++
+++#include <hunch/internal/opengl.h>
++ 
++ namespace hunch {
++     /**
++@@ -19,33 +26,231 @@ namespace hunch {
++         depends on the layout ( interleaved or sequential ). The buffer is automatically resized
++         when it's full.
++ 
+++        These streams don't care about type, they accept arbitrary data. Some constraints apply,
+++        since each mesh stream must know it's data type ( e.g. GL_FLOAT ) and the number of
+++        components a vertex has. However, in the code, this is all represented by void*
+++        arguments, the underlying data is assumed to be as described by these constraints.
+++
+++        Templated instantiations of this class is made possible through subclasses. These may
+++        also provide convenience functions, so data doesn't have to be converted to an array
+++        first.
+++
++         [1] - I mean all the vertex positions, then all the normals, then UVs, and so forth
++     **/
++-    class BaseMeshStream {
+++
+++    /**
+++        After some consideration, supporting multiple layouts was deemed unnecessary. Sure,
+++        a sequential layout could be supported, but it takes more messing around with memory
+++        ( create a buffer for each stream, write into those, then merge all of the buffers
+++        before upload to GPU ) and will most probably be slower. More buffers, more bookkeeping.
+++
+++        So, to sum it up, YAGNI.
+++
+++        Since only one layout will be supported, generic base classes are not needed.
+++    **/
+++    // class GenericMeshStream;
+++    // class GenericMesh;
+++
+++    /**
+++        For starters, to make the API simpler, meshes do not support modification. You send them
+++        in all the necessary data, upload it to the GPU and that's it. After that, you need to
+++        create a new mesh from the same data to 'modify' it. This might change in the future,
+++        but these classes are not meant for frequent mesh generation on the CPU.
+++    **/
+++
+++    class InterleavedMeshStream {
+++        private:
+++            buffer& _buffer;
+++
+++            // Current position in buffer
+++            size_t _at;
+++
+++            // Offset of the first element ( in bytes )
+++            size_t _offset;
+++
+++            // Distance between the beginning of the first vertex and the next ( in bytes )
+++            // TODO: rename to _step
+++            size_t _stride;
+++
+++            // Number of components ( aka. 3 for a float3 )
+++            size_t _components;
+++
+++            // Size of a single component in bytes ( aka. sizeof(float) for a float3 )
+++            size_t _item_size;
+++
++         public:
++-            const void* const data() const;
+++            /**
+++            The InterleavedMeshStream class is not really supposed to be created from outside.
+++            However, I don't expect this to actually happen, since most of the information
+++            needed to create it is known by the corresponding Mesh class.
+++
+++            However, leaving it public might provide some additional hackability. We'll see.
+++            **/
+++            inline InterleavedMeshStream(buffer& buffer, size_t offset, size_t stride, size_t components, size_t size):
+++                _buffer(buffer),
+++                _at(offset),
+++                _offset(offset),
+++                _stride(stride),
+++                _components(components),
+++                _item_size(size)
+++                {}
+++
+++            InterleavedMeshStream(const InterleavedMeshStream&) = delete;
+++            InterleavedMeshStream(InterleavedMeshStream&&) = delete;
+++            ~InterleavedMeshStream() = default;
+++
+++            // Write a single vertex
+++            // Data should be an array of appropriate type and length
+++            inline void write_vertex(void* data) {
+++                // Determine how many bytes will a single segment take
+++                // NOTE: Having this expression in multiple places of the code, can be error-prone
+++                size_t length = _components * _item_size;
+++
+++                // buffer ignores capacity decrease requests, so this is pretty safe to call
+++                // Sort of like .reserve() on std::vector
+++                _buffer.capacity(_at + length);
+++
+++                std::memcpy(&(_buffer[_at]), data, length);
+++                seek_rel(1);
+++            }
+++
+++            // Seek to the nth vertex in the buffer
+++            inline void seek(size_t n) {
+++                _at = _offset + n * ((_components * _item_size) + _stride);
+++            }
+++
+++            // Seek relative to current position, in either direction
+++            inline void seek_rel(int n) {
+++                // Slow path - make sure we don't seek below absolute zero
+++                if(n < 0) {
+++                    size_t an = abs(n);
+++                    size_t offset = an * ((_components * _item_size) + _stride);
+++
+++                    if(offset > _at - _offset)
+++                        _at = _offset;
+++                    else
+++                        _at -= offset;
+++                }
+++                // We can scroll forward as long as RAM lets us
+++                else
+++                    _at += size_t(n) * ((_components * _item_size) + _stride);
+++            }
++     };
++ 
++-    template <typename T, size_t C>
++-    class MeshStream : public BaseMeshStream {
++-        private:
++-            std::vector<T> _buffer;
+++    /*
+++        InterleavedMeshStreams are frozen after creating them. You can't change their component
+++        count, their stride, item size, etc. This way, it is a bit more difficult to screw it
+++        up after creating them.
+++
+++        However, this also means that you can't dynamically add streams to mesh objects. So
+++        something like this is not really possible:
+++
+++        ```
+++        Mesh mesh;
+++            mesh.add_stream<float, 3>();
+++            mesh.add_stream<float, 3>();
+++            mesh.add_stream<float, 2>();
+++        ```
+++
+++         This is because for interleaved meshes, we need to know about all the streams before
+++         creating their instances, so their offsets and strides can be properly calculated. We
+++         could just make streams mutable, but I really want to avoid that.
+++
+++         Thus, let's introduce vertex formats:
+++    */
++ 
+++    class VertexFormat {
++         public:
++-            typedef T  data_t;
++-            typedef T* vertex_t;
++-            typedef unsigned index_t;
+++            struct {
+++                size_t components;
+++                size_t item_size;
+++                GLenum native_type;
++ 
++-            const size_t components = C;
+++                inline size_t size() const {return item_size*components;}
+++            } item_t;
++ 
++-            vertex_t vertex(index_t i);
++-            data_t& component(index_t i);
++-            data_t& component(index_t v, index_t c);
+++            template <typename T, size_t C>
+++            VertexFormat& add() {
+++                item_t item;
+++                    item.components = C;
+++                    item.item_size = sizeof(T);
+++                    item.native_type = _native_type<T>();
+++
+++                _items.push_back(item);
+++
+++                return *this;
+++            }
+++
+++            inline size_t size() const {
+++                return _items.size();
+++            }
+++
+++            inline item_t at(size_t i) const {
+++                return _items[i];
+++            }
+++
+++        private:
+++            std::vector<item_t> _items;
++ 
++-            const void* const data() const;
+++            template <typename T>
+++            GLenum _native_type() {static_assert(false, "Can't resolve generic type to native type");}
+++
+++            // Not very pretty, but there's going to be a few of these
+++            // TODO: Move it to a file?
+++            template <> GLenum _native_type<signed short>()     {return GL_SHORT; }
+++            template <> GLenum _native_type<unsigned short>()   {return GL_UNSIGNED_SHORT; }
+++            template <> GLenum _native_type<signed int>()       {return GL_INT; }
+++            template <> GLenum _native_type<unsigned int>()     {return GL_UNSIGNED_INT; }
+++            template <> GLenum _native_type<float>()            {return GL_FLOAT; }
+++            template <> GLenum _native_type<double>()           {return GL_DOUBLE; }
++     };
++ 
++-    class BaseMesh {
++-        ;
+++    class InterleavedMesh {
+++        public:
+++            // TODO: Since InterleavedMeshStream is only used by this class and basically makes
+++            // no sense for it to exist on its own, it would make sense to make it a nested class
+++            typedef InterleavedMeshStream stream_t;
+++
+++            inline InterleavedMesh(const VertexFormat& vf) {
+++                // Determine the size of a whole vertex
+++                size_t vertex_size = 0;
+++                for(size_t i = 0; i < vf.size(); i++)
+++                    vertex_size += vf.at(i).size();
+++
+++                // Create streams
+++                // Just allocate memory, don't initialize
+++                _stream_count = vf.size();
+++                _streams = static_cast<stream_t*>(malloc(_stream_count * sizeof(stream_t)));
+++
+++                size_t offset = 0;
+++                for(size_t i = 0; i < vf.size(); i++) {
+++                    auto vf_item = vf.at(i);
+++
+++                    // Initialize stream
+++                    new (_streams+i) _stream_t(_buffer, offset, vertex_size, vf_item.components, vf_item.item_size);
+++
+++                    offset += vf_item.size();
+++                }
+++            }
+++
+++            inline stream_t& operator[](size_t i) {
+++                // TODO: throw?
+++                assert(i < _stream_count);
+++                return _streams[i];
+++            }
+++
+++            inline ~InterleavedMesh() {
+++                // Destruct all streams
+++                for(size_t i = 0; i < _stream_count; i++)
+++                    _streams[i]->~stream_t();
+++
+++                // Free space
+++                free(_streams);
+++            }
+++
+++        private:
+++            buffer _buffer;
+++            stream_t* _streams;
+++            size_t _stream_count;
++     };
++ }
+diff --git a/sample/full.diff b/sample/full.diff
+new file mode 100644
+index 0000000..cb380bc
+--- /dev/null
++++ b/sample/full.diff
+@@ -0,0 +1,323 @@
++@@ -0,0 +0,0
+++#pragma once
+++
+++#include <vector>
+++#include <array>
+++
+++namespace hunch {
+++    class BaseMeshStream {
+++        public:
+++            const void* const data() const;
+++    };
+++
+++    template <typename T, size_t C>
+++    class MeshStream : public BaseMeshStream {
+++        private:
+++            std::vector<T> _buffer;
+++
+++        public:
+++            typedef T  data_t;
+++            typedef T* vertex_t;
+++            typedef unsigned index_t;
+++
+++            const size_t components = C;
+++
+++            vertex_t vertex(index_t i);
+++            data_t& component(index_t i);
+++            data_t& component(index_t v, index_t c);
+++
+++            const void* const data() const;
+++    };
+++
+++    class BaseMesh {
+++        ;
+++    };
+++}
++@@ -4,6 +4,23 @@
++ #include <array>
++ 
++ namespace hunch {
+++    /**
+++        To approach this a bit more conceptionally:
+++
+++        Each mesh maintains an internal buffer ( possibly multiple buffers ).
+++        This data is then uploaded to the GPU for use. This buffer can have different layout
+++        based on how the vertex data is aligned - it can be interleaved or sequential[1].
+++
+++        A mesh has various streams, this makes up its vertex format. For example a float3 stream
+++        for position, a float2 stream for UVs, or an int1 stream for bone indices. As it is
+++        apparent, each stream has a data type ( float, int, etc. ) and a component count.
+++
+++        The stream writes one vertex at a time into its parent's buffer. How this write happens
+++        depends on the layout ( interleaved or sequential ). The buffer is automatically resized
+++        when it's full.
+++
+++        [1] - I mean all the vertex positions, then all the normals, then UVs, and so forth
+++    **/
++     class BaseMeshStream {
++         public:
++             const void* const data() const;
++@@ -0,0 +0,0
++ #pragma once
++ 
+++#include <cstddef> // size_t
+++#include <cstring> // memcpy
+++#include <cassert> // static_assert
+++#include <cstdlib> // malloc, free
++ #include <vector>
++-#include <array>
+++
+++#include <buffer.hpp>
+++
+++#include <hunch/internal/opengl.h>
++ 
++ namespace hunch {
++     /**
++@@ -19,33 +26,231 @@ namespace hunch {
++         depends on the layout ( interleaved or sequential ). The buffer is automatically resized
++         when it's full.
++ 
+++        These streams don't care about type, they accept arbitrary data. Some constraints apply,
+++        since each mesh stream must know it's data type ( e.g. GL_FLOAT ) and the number of
+++        components a vertex has. However, in the code, this is all represented by void*
+++        arguments, the underlying data is assumed to be as described by these constraints.
+++
+++        Templated instantiations of this class is made possible through subclasses. These may
+++        also provide convenience functions, so data doesn't have to be converted to an array
+++        first.
+++
++         [1] - I mean all the vertex positions, then all the normals, then UVs, and so forth
++     **/
++-    class BaseMeshStream {
+++
+++    /**
+++        After some consideration, supporting multiple layouts was deemed unnecessary. Sure,
+++        a sequential layout could be supported, but it takes more messing around with memory
+++        ( create a buffer for each stream, write into those, then merge all of the buffers
+++        before upload to GPU ) and will most probably be slower. More buffers, more bookkeeping.
+++
+++        So, to sum it up, YAGNI.
+++
+++        Since only one layout will be supported, generic base classes are not needed.
+++    **/
+++    // class GenericMeshStream;
+++    // class GenericMesh;
+++
+++    /**
+++        For starters, to make the API simpler, meshes do not support modification. You send them
+++        in all the necessary data, upload it to the GPU and that's it. After that, you need to
+++        create a new mesh from the same data to 'modify' it. This might change in the future,
+++        but these classes are not meant for frequent mesh generation on the CPU.
+++    **/
+++
+++    class InterleavedMeshStream {
+++        private:
+++            buffer& _buffer;
+++
+++            // Current position in buffer
+++            size_t _at;
+++
+++            // Offset of the first element ( in bytes )
+++            size_t _offset;
+++
+++            // Distance between the beginning of the first vertex and the next ( in bytes )
+++            // TODO: rename to _step
+++            size_t _stride;
+++
+++            // Number of components ( aka. 3 for a float3 )
+++            size_t _components;
+++
+++            // Size of a single component in bytes ( aka. sizeof(float) for a float3 )
+++            size_t _item_size;
+++
++         public:
++-            const void* const data() const;
+++            /**
+++            The InterleavedMeshStream class is not really supposed to be created from outside.
+++            However, I don't expect this to actually happen, since most of the information
+++            needed to create it is known by the corresponding Mesh class.
+++
+++            However, leaving it public might provide some additional hackability. We'll see.
+++            **/
+++            inline InterleavedMeshStream(buffer& buffer, size_t offset, size_t stride, size_t components, size_t size):
+++                _buffer(buffer),
+++                _at(offset),
+++                _offset(offset),
+++                _stride(stride),
+++                _components(components),
+++                _item_size(size)
+++                {}
+++
+++            InterleavedMeshStream(const InterleavedMeshStream&) = delete;
+++            InterleavedMeshStream(InterleavedMeshStream&&) = delete;
+++            ~InterleavedMeshStream() = default;
+++
+++            // Write a single vertex
+++            // Data should be an array of appropriate type and length
+++            inline void write_vertex(void* data) {
+++                // Determine how many bytes will a single segment take
+++                // NOTE: Having this expression in multiple places of the code, can be error-prone
+++                size_t length = _components * _item_size;
+++
+++                // buffer ignores capacity decrease requests, so this is pretty safe to call
+++                // Sort of like .reserve() on std::vector
+++                _buffer.capacity(_at + length);
+++
+++                std::memcpy(&(_buffer[_at]), data, length);
+++                seek_rel(1);
+++            }
+++
+++            // Seek to the nth vertex in the buffer
+++            inline void seek(size_t n) {
+++                _at = _offset + n * ((_components * _item_size) + _stride);
+++            }
+++
+++            // Seek relative to current position, in either direction
+++            inline void seek_rel(int n) {
+++                // Slow path - make sure we don't seek below absolute zero
+++                if(n < 0) {
+++                    size_t an = abs(n);
+++                    size_t offset = an * ((_components * _item_size) + _stride);
+++
+++                    if(offset > _at - _offset)
+++                        _at = _offset;
+++                    else
+++                        _at -= offset;
+++                }
+++                // We can scroll forward as long as RAM lets us
+++                else
+++                    _at += size_t(n) * ((_components * _item_size) + _stride);
+++            }
++     };
++ 
++-    template <typename T, size_t C>
++-    class MeshStream : public BaseMeshStream {
++-        private:
++-            std::vector<T> _buffer;
+++    /*
+++        InterleavedMeshStreams are frozen after creating them. You can't change their component
+++        count, their stride, item size, etc. This way, it is a bit more difficult to screw it
+++        up after creating them.
+++
+++        However, this also means that you can't dynamically add streams to mesh objects. So
+++        something like this is not really possible:
+++
+++        ```
+++        Mesh mesh;
+++            mesh.add_stream<float, 3>();
+++            mesh.add_stream<float, 3>();
+++            mesh.add_stream<float, 2>();
+++        ```
+++
+++         This is because for interleaved meshes, we need to know about all the streams before
+++         creating their instances, so their offsets and strides can be properly calculated. We
+++         could just make streams mutable, but I really want to avoid that.
+++
+++         Thus, let's introduce vertex formats:
+++    */
++ 
+++    class VertexFormat {
++         public:
++-            typedef T  data_t;
++-            typedef T* vertex_t;
++-            typedef unsigned index_t;
+++            struct {
+++                size_t components;
+++                size_t item_size;
+++                GLenum native_type;
++ 
++-            const size_t components = C;
+++                inline size_t size() const {return item_size*components;}
+++            } item_t;
++ 
++-            vertex_t vertex(index_t i);
++-            data_t& component(index_t i);
++-            data_t& component(index_t v, index_t c);
+++            template <typename T, size_t C>
+++            VertexFormat& add() {
+++                item_t item;
+++                    item.components = C;
+++                    item.item_size = sizeof(T);
+++                    item.native_type = _native_type<T>();
+++
+++                _items.push_back(item);
+++
+++                return *this;
+++            }
+++
+++            inline size_t size() const {
+++                return _items.size();
+++            }
+++
+++            inline item_t at(size_t i) const {
+++                return _items[i];
+++            }
+++
+++        private:
+++            std::vector<item_t> _items;
++ 
++-            const void* const data() const;
+++            template <typename T>
+++            GLenum _native_type() {static_assert(false, "Can't resolve generic type to native type");}
+++
+++            // Not very pretty, but there's going to be a few of these
+++            // TODO: Move it to a file?
+++            template <> GLenum _native_type<signed short>()     {return GL_SHORT; }
+++            template <> GLenum _native_type<unsigned short>()   {return GL_UNSIGNED_SHORT; }
+++            template <> GLenum _native_type<signed int>()       {return GL_INT; }
+++            template <> GLenum _native_type<unsigned int>()     {return GL_UNSIGNED_INT; }
+++            template <> GLenum _native_type<float>()            {return GL_FLOAT; }
+++            template <> GLenum _native_type<double>()           {return GL_DOUBLE; }
++     };
++ 
++-    class BaseMesh {
++-        ;
+++    class InterleavedMesh {
+++        public:
+++            // TODO: Since InterleavedMeshStream is only used by this class and basically makes
+++            // no sense for it to exist on its own, it would make sense to make it a nested class
+++            typedef InterleavedMeshStream stream_t;
+++
+++            inline InterleavedMesh(const VertexFormat& vf) {
+++                // Determine the size of a whole vertex
+++                size_t vertex_size = 0;
+++                for(size_t i = 0; i < vf.size(); i++)
+++                    vertex_size += vf.at(i).size();
+++
+++                // Create streams
+++                // Just allocate memory, don't initialize
+++                _stream_count = vf.size();
+++                _streams = static_cast<stream_t*>(malloc(_stream_count * sizeof(stream_t)));
+++
+++                size_t offset = 0;
+++                for(size_t i = 0; i < vf.size(); i++) {
+++                    auto vf_item = vf.at(i);
+++
+++                    // Initialize stream
+++                    new (_streams+i) _stream_t(_buffer, offset, vertex_size, vf_item.components, vf_item.item_size);
+++
+++                    offset += vf_item.size();
+++                }
+++            }
+++
+++            inline stream_t& operator[](size_t i) {
+++                // TODO: throw?
+++                assert(i < _stream_count);
+++                return _streams[i];
+++            }
+++
+++            inline ~InterleavedMesh() {
+++                // Destruct all streams
+++                for(size_t i = 0; i < _stream_count; i++)
+++                    _streams[i]->~stream_t();
+++
+++                // Free space
+++                free(_streams);
+++            }
+++
+++        private:
+++            buffer _buffer;
+++            stream_t* _streams;
+++            size_t _stream_count;
++     };
++ }

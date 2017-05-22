@@ -12,7 +12,7 @@ class Commit {
             let p_author = /Author:\s+(.+)/g;
             let p_date = /Date:\s+(.+)/g;
 
-            lines = text.split(/\n|\r\n/);
+            let lines = text.split(/\n|\r\n/);
 
             this.hash = p_hash.exec(lines[0])[1];
             this.author = p_author.exec(lines[1])[1];
@@ -29,7 +29,7 @@ class Commit {
             }
 
             // Try to extract all file diffs
-            let p = /diff\s*(\-\-git)?\sa/(.+) b/(.+)/;
+            let p = /diff\s*(\-\-git)?\sa\/(.+) b\/(.+)/;
             for(; i < lines.length; i++) {
                 let m = p.exec(lines[i]);
 
@@ -55,7 +55,7 @@ class Commit {
                 let filediff = [];
                 for(; j < lines.length; ++j)
                     if(/^[ \-\+@]/.test(lines[j]))
-                        filediff.push(lines[i]);
+                        filediff.push(lines[j]);
                     else
                         break;
 

@@ -28,3 +28,7 @@ textarea.transparent.fill {
 .hidden {
     display: none;
 }
+
+.preserve-ws {
+    white-space: pre-wrap; 
+}
