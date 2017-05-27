@@ -3,36 +3,8 @@
 {% block head %}
     <title>Project typer</title>
 
-    <style>
-        #pane-left {
-            height: 100vh;
-            width: 20vw;
-
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        #pane-code {
-            height: 100vh;
-            width: 80vw;
-
-            position: absolute;
-            top: 0;
-            left: 20vw;
-        }
-
-        #panel-files {
-            height: 60%;
-            width: 100%;
-        }
-    </style>
-
-    <script>
-        $(document).ready(function () {
-            $("#startup-modal").modal();
-        });
-    </script>
+    <script src="js/page/project.js"></script>
+    <link rel="stylesheet" href="css/page/project.css" />
 {% endblock %}
 
 {% block body %}
