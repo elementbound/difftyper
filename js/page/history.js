@@ -27,8 +27,10 @@ class CommitDetailLoader {
     }
 
     query_next_commit() {
-        if(!this._to_load.length)
+        if(!this._to_load.length) {
+            $(this).trigger('finish');
             return false;
+        }
 
         let hash = this._to_load.shift();
 
@@ -51,12 +53,23 @@ class CommitDetailLoader {
 }
 
 $(document).ready(function() {
+    /** Init **/
+    $("#commit-progress")
+        .removeClass("hidden")
+        .hide();
+
     /** Events **/
     $("#repo-load").click(function() {
         let repo = $("#repo-path").val();
         let loader = new CommitDetailLoader(repo);
 
-        console.log('Loading repo', repo);
+        // Reset progressbar
+        $("#commit-progress").removeClass("progress-bar-danger");
+        $("#commit-progress").slideDown();
+        $("#commit-progress>.progress-bar").css("width", 0);
+
+        // Reset commits table
+        $("#commits>tbody").empty();
 
         $(loader).on('progress', function(e, current, max) {
             $("#commit-progress>.progress-bar")
@@ -65,7 +78,38 @@ $(document).ready(function() {
                 .attr("aria-valueat", current)
                 .css("width", (current / max)*100 + "%")
                 .find(".progress-label")
-                    .text(Math.round((current / max)*100) + "%");
+                    .text(current + '/' + max);
+        });
+
+        $(loader).on('commit', function(e, commit) {
+            let tbody = $("#commits>tbody");
+
+            let row = $("<tr>");
+
+            // Commit, Message, Date
+            $("<td>")
+                .text(commit.hash.substr(0, 12) + '...')
+                .appendTo(row);
+
+            $("<td>")
+                .text(commit.message)
+                .appendTo(row);
+
+            $("<td>")
+                .text(commit.date)
+                .appendTo(row);
+
+            row.prependTo(tbody);
+        });
+
+        $(loader).on('error', function(e) {
+            $("#commit-progress").addClass("progress-bar-danger");
+        });
+
+        $(loader).on('finish', function(e) {
+            setTimeout(function() {
+                $("#commit-progress").slideUp();
+            }, 1000);
         });
 
         loader.query_list();
