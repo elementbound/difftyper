@@ -1,13 +1,9 @@
 {% extends "header.html" %}
 
 {% block head %}
-    <title>O shit fam</title>
+    <title>Project typer</title>
 
     <style>
-        div {
-            border: 1px solid black;
-        }
-
         #pane-left {
             height: 100vh;
             width: 20vw;
@@ -30,13 +26,13 @@
             height: 60%;
             width: 100%;
         }
-
-        .tab {
-            border-radius: 8px 8px 0 0;
-            border: 1px solid black;
-            padding: 4px;
-        }
     </style>
+
+    <script>
+        $(document).ready(function () {
+            $("#startup-modal").modal();
+        });
+    </script>
 {% endblock %}
 
 {% block body %}
@@ -44,12 +40,40 @@
     <div id="pane-left">
         <!-- Files -->
         <div id="panel-files">
-            Files here
+            <table id="filetree" class="table table-striped">
+                <thead>
+                    <tr><td>Files: </td></tr>
+                </thead>
+
+                <tbody>
+                    <tr><td>Root</td></tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- Commit data -->
         <div>
-            All dem sweet commit data here
+            <table class="table table-striped" id="commit-data">
+                <tr>
+                    <td>commit</td>
+                    <td id="commit-hash"></td>
+                </tr>
+
+                <tr>
+                    <td>Author: </td>
+                    <td id="commit-author"></td>
+                </tr>
+
+                <tr>
+                    <td>Message: </td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" class="preserve-ws" id="commit-message">
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 
@@ -57,7 +81,7 @@
     <div id="pane-code">
         <!-- Current file indicator -->
         <div style="width: 100%;">
-            <span class="tab">
+            <span class="btn btn-xs btn-default">
                 Current file
             </span>
         </div>
@@ -67,4 +91,30 @@
             Code, yo
         </div>
     </div>
+
+    <!-- Startup modal to select repo -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="startup-modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">difftyper startup</h4>
+                </div>
+
+                <div class="modal-body">
+                    <div class="input-group">
+                        <span class="input-group-addon">Repository: </span>
+                        <input class="form-control" type="text" id="repo-path" />
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" id="repo-load">Load</button>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 {% endblock %}
