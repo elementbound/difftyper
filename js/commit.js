@@ -57,7 +57,7 @@ class Commit {
                         file.mode = 'new';
 
                     if(/^deleted file mode/.test(lines[j]))
-                        file.mode = 'delete'; 
+                        file.mode = 'delete';
 
                     // Found first line with valid diff
                     if(/^[ \-\+@]/.test(lines[j]))
@@ -70,11 +70,11 @@ class Commit {
                     else
                         break;
 
-                file.diff = file.diff.join('\n');
-                this.files.push(file);
-
                 i = j;
             }
+
+            file.diff = file.diff.join('\n');
+            this.files.push(file);
         }
     }
 }
