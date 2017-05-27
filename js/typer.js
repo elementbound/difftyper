@@ -164,10 +164,35 @@ class Typer {
         }
         else if(op[0] == 'skip') {
             if(this.lines[this._at] != op[1]) {
-                console.error('[skp]', this.lines[this._at], '!=', op[1]);
-                this.ops = [];
-                this._op_consume();
-                return false;
+                // Find closest match
+                let range = 3;
+                let closest_dst = range + 1;
+                let closest_idx = this._at;
+                let closest_found = false;
+
+                for(let i = this._at - range; i < this._at + range; ++i) {
+                    if(this.lines[i] == op[1])
+                        if(Math.abs(i - this._at) < closest_dst) {
+                            closest_dst = Math.abs(i - this._at);
+                            closest_idx = i;
+                            closest_found = true;
+                        }
+                }
+
+                this._at = closest_idx;
+
+                if(!closest_found) {
+                    console.error("Couldn't find matching context line");
+                    console.error("Current line:", this._at);
+                    console.error("Context line:", op[1]);
+
+                    this._op_consume();
+                    this.ops = [];
+                    return false;
+                }
+                else {
+                    console.log("Found context line, distance is", closest_dst);
+                }
             }
 
             this.skipline();
