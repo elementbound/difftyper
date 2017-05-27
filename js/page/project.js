@@ -32,7 +32,7 @@ class Project {
                 // TODO: If a huge file is added, don't type it just assume it was copied there
 
                 // Add/remove necessary file
-                if(file.mode == 'add')
+                if(file.mode == 'new')
                     this._queue.push(['add-file', file]);
                 else if(file.mode == 'delete')
                     this._queue.push(['remove-file', file]);
@@ -86,6 +86,7 @@ class Project {
     // ['add-file', file]
     _op_add_file(type, file) {
         this.tree.add(file.name);
+        console.log('Added file:', file.name);
         $(this).trigger('step');
     }
 
@@ -98,6 +99,8 @@ class Project {
     // ['open-file', file]
     _op_open_file(type, file) {
         this.current_file = this.tree.find(file.name);
+
+        console.log(file.name, this.current_file);
         $(this).trigger('render-file', [file.name, this.current_file]);
     }
 

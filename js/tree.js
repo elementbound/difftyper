@@ -63,8 +63,8 @@ class TreeNode {
 }
 
 class FileNode extends TreeNode {
-    constructor() {
-        super();
+    constructor(name) {
+        super(name);
 
         this.content = '';
     }
@@ -226,7 +226,7 @@ class FileTree extends Tree {
                 at = next;
         }
 
-        return at; 
+        return at;
     }
 
     static parse_path(path) {
