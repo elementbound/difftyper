@@ -52,6 +52,33 @@ class CommitDetailLoader {
     }
 }
 
+// I mean I could have easily written this myself but eh
+// Thanks, Marko
+// https://stackoverflow.com/a/3552493/8055783
+
+// p.s.: actually had to add time part myself
+function formatDate(datetime) {
+  var monthNames = [
+    "January", "February", "March",
+    "April", "May", "June", "July",
+    "August", "September", "October",
+    "November", "December"
+  ];
+
+  var day = datetime.getDate();
+  var monthIndex = datetime.getMonth();
+  var year = datetime.getFullYear();
+
+  let hour = datetime.getHours(); hour = hour < 10 ? '0'+hour : hour.toString();
+  let minute = datetime.getMinutes(); minute = minute < 10 ? '0'+minute : minute.toString();
+  let second = datetime.getSeconds(); second = second < 10 ? '0'+second : second.toString();
+
+  let date = day + ' ' + monthNames[monthIndex].substr(0,3) + ' ' + year;
+  let time = [hour, minute, second].join(':');
+
+  return date + ' ' + time;
+}
+
 $(document).ready(function() {
     /** Init **/
     $("#commit-progress")
@@ -96,7 +123,7 @@ $(document).ready(function() {
                 .appendTo(row);
 
             $("<td>")
-                .text(commit.date)
+                .text(formatDate(commit.date))
                 .appendTo(row);
 
             row.prependTo(tbody);
