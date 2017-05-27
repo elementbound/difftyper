@@ -13,6 +13,11 @@ class Project {
         this.current_file = undefined;
 
         this._queue = [];
+
+        /* Always clear up listeners after finishing */
+        $(this).on('finish', function() {
+            $(this).unbind('next-step', this.step);
+        })
     }
 
     reset() {
@@ -63,13 +68,15 @@ class Project {
         }
 
         // Run steps one by one
-        // $(this).on('step', this.step);
+        $(this).on('next-step', this.step);
         this.step();
     }
 
     step() {
-        if(this._queue.empty())
+        if(this._queue.empty()) {
+            $(this).trigger('finish');
             return false;
+        }
 
         let op = this._queue.shift();
         console.log('Step:', op);
@@ -92,20 +99,20 @@ class Project {
     _op_commit(type, commit) {
         console.log('[op]commit:', commit);
         $(this).trigger('render-commit', [commit]);
-        //$(this).trigger('step');
+        $(this).trigger('next-step');
     }
 
     // ['add-file', file]
     _op_add_file(type, file) {
         this.tree.add(file.name);
         console.log('Added file:', file.name);
-        //$(this).trigger('step');
+        $(this).trigger('next-step');
     }
 
     // ['remove-file', file]
     _op_remove_file(type, file) {
         this.tree.remove(file.name);
-        //$(this).trigger('step');
+        $(this).trigger('next-step');
     }
 
     // ['open-file', file]
@@ -114,7 +121,7 @@ class Project {
 
         console.log(file.name, this.current_file);
         $(this).trigger('render-file', [file.name, this.current_file]);
-        //$(this).trigger('step');
+        $(this).trigger('next-step');
     }
 
     // ['type', file]
@@ -128,7 +135,7 @@ class Project {
         console.log('Diff:', file.diff);
 
         /* $(this.typer).on('finish', function() {
-            $(this).trigger('step');
+            $(this).trigger('next-step');
         }.bind(this)); */
 
         this.typer.run(1000/5);
@@ -237,6 +244,16 @@ $(document).ready(function () {
         $('#code').text(lines.join('\n'));
         $('#code').removeClass('prettyprinted');
         PR.prettyPrint();
+
+        // Scroll to cursor
+        let font_size = $("#code").css("font-size");
+        font_size = /\d+/.exec(font_size)[0];
+        font_size = parseInt(font_size);
+
+        let to = font_size * project.typer._at;
+
+        console.log("Scrolling to", to);
+        $("#code").scrollTop(to);
     });
 
     $("#step").click(function() {
