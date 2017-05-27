@@ -1,0 +1,61 @@
+commit 629f4639ceed15fb78f255bda1419c1cf1a1944b
+Author: Gálffy Tamás <ezittgtx@gmail.com>
+Date:   Mon May 22 19:42:16 2017 +0300
+
+    Added a simple API on backend
+
+diff --git a/git.py b/git.py
+index 7b87325..d882a92 100644
+--- a/git.py
++++ b/git.py
+@@ -5,7 +5,7 @@ class Git:
+         """
+         Init a git instance in the given directory. All functions will use this directory.
+         """
+-        self.directory = at
++        self.directory = str(at) # Accept pathlike objects
+         self.command = 'git'
+ 
+         # Check if we're in a git repo's directory
+diff --git a/main.py b/main.py
+index aac8903..62eefd9 100644
+--- a/main.py
++++ b/main.py
+@@ -1,10 +1,13 @@
+ import flask
++import json
++from pathlib import Path
++from git import Git
+ 
+ app = flask.Flask('difftyper')
+ 
+ @app.route('/')
+ def index():
+-    return page('index') 
++    return page('index')
+ 
+ @app.route('/<what>')
+ def page(what):
+@@ -24,6 +27,22 @@ def page(what):
+ 
+     return flask.render_template(page, pages=mapping.keys())
+ 
++@app.route('/api/git/commits/<path:path>')
++def git_commits(path):
++    try:
++        git = Git(path)
++        return json.dumps({'commits': git.commits()}, indent=4)
++    except:
++        return json.dumps({'error': True})
++
++@app.route('/api/git/show/<commit>/<path:path>')
++def git_show(commit, path):
++    try:
++        git = Git(path)
++        return json.dumps({'commit': git.show(commit)}, indent=4)
++    except:
++        return json.dumps({'error': True})
++
+ @app.route('/js/<path:path>')
+ def serve_js(path):
+     return flask.send_from_directory('js', path)

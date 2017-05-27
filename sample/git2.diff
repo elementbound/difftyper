@@ -1,0 +1,32 @@
+commit aa1d50c71ca1819b1f161c33623fa6a23a637862
+Author: Gálffy Tamás <ezittgtx@gmail.com>
+Date:   Mon May 22 19:33:29 2017 +0300
+
+    Solved some encoding issues with git
+
+diff --git a/git.py b/git.py
+index 0d42d52..7b87325 100644
+--- a/git.py
++++ b/git.py
+@@ -18,11 +18,16 @@ class Git:
+         """
+         Call git with the given command line arguments.
+         """
+-        return subprocess.run([self.command] + list(args), \
+-                              stdout = subprocess.PIPE, \
+-                              stderr = subprocess.PIPE, \
+-                              universal_newlines = True,
+-                              cwd = self.directory)
++        r = subprocess.run([self.command] + list(args),
++                            stdout = subprocess.PIPE,
++                            stderr = subprocess.PIPE,
++                            cwd = self.directory)
++
++        # Passing encoding throws an unexpected kwarg error, so here's a workaround
++        r.stdout = r.stdout.decode('utf-8')
++        r.stderr = r.stderr.decode('utf-8')
++
++        return r
+ 
+     def commits(self):
+         """
