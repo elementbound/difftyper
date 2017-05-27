@@ -17,6 +17,7 @@ class Commit {
             this.hash = p_hash.exec(lines[0])[1];
             this.author = p_author.exec(lines[1])[1];
             this.date = p_date.exec(lines[2])[1];
+            this.date = new Date(this.date);
 
             let i;
             for(i = 4; true; i++) {
