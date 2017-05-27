@@ -7,8 +7,8 @@ function manual_hide(selector) {
 class Project {
     constructor() {
         this.commits = [];
-        this.tree = new FileTree();
-        this.typer = new Typer();
+        this.tree = undefined;
+        this.typer = undefined;
 
         this.current_file = undefined;
 
@@ -18,9 +18,26 @@ class Project {
     reset() {
         this.tree = new FileTree();
         this.typer = new Typer();
+
+        $(this.tree).on('change', function() {
+            $(this).trigger('tree-change', [this.tree]);
+        }.bind(this));
+
+        $(this.typer).on('present', function(e, lines) {
+            $(this).trigger('render-code', [lines, this.typer]);
+        }.bind(this));
     }
 
     run() {
+        // Reset
+        this.reset();
+
+        // Wire events
+        $(this.typer).on('finish', function() {this.step()}.bind(this));
+        $(this.typer).on('present', function() {
+            this.current_file.content = this.typer.lines.join('\n')
+        }.bind(this));
+
         // Query ops
         this._queue = [];
 
@@ -114,7 +131,7 @@ class Project {
             $(this).trigger('step');
         }.bind(this)); */
 
-        this.typer.run();
+        this.typer.run(1000/5);
     }
 };
 
@@ -186,8 +203,20 @@ $(document).ready(function () {
         project.run();
     });
 
+    /** Project events **/
+    $(project).on('render-commit', function(e, commit) {
+        $("#commit-hash").text(commit.hash);
+        $("#commit-author").text(commit.author);
+        $("#commit-message").text(commit.message);
+    });
+
+    $(project).on('render-file', function(e, name, node) {
+        $("#current-file").text(name);
+        $("#code").text(node.content);
+    });
+
     /** Tree events **/
-    $(project.tree).on('change', function() {
+    $(project).on('tree-change', function() {
         let tree = project.tree;
         let table = $("#filetree>tbody");
         table.empty();
@@ -204,22 +233,10 @@ $(document).ready(function () {
     });
 
     /** Typer events **/
-    $(project.typer).on('present', function(e, lines) {
+    $(project).on('render-code', function(e, lines) {
         $('#code').text(lines.join('\n'));
         $('#code').removeClass('prettyprinted');
         PR.prettyPrint();
-    });
-
-    /** Project events **/
-    $(project).on('render-commit', function(e, commit) {
-        $("#commit-hash").text(commit.hash);
-        $("#commit-author").text(commit.author);
-        $("#commit-message").text(commit.message);
-    });
-
-    $(project).on('render-file', function(e, name, node) {
-        $("#current-file").text(name);
-        $("#code").text(node.content);
     });
 
     $("#step").click(function() {
