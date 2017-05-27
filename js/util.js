@@ -93,3 +93,9 @@ function formatDate(datetime) {
 
     return date + ' ' + time;
 }
+
+// Some array utils
+if(!Array.prototype.empty)
+    Array.prototype.empty = function() {
+        return this.length == 0;
+    }

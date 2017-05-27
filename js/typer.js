@@ -1,9 +1,3 @@
-// Some array utils
-if(!Array.prototype.empty)
-    Array.prototype.empty = function() {
-        return this.length == 0;
-    }
-
 // Convert words per minute into timeout between key presses
 function wpm(w) {
     return 1000 / (w * 5 / 60);

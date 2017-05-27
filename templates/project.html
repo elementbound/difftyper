@@ -3,7 +3,12 @@
 {% block head %}
     <title>Project typer</title>
 
+    <script src="js/typer.js"></script>
+    <script src="js/tree.js"></script>
+    <script src="js/commit.js"></script>
+    <script src="js/util.js"></script>
     <script src="js/page/project.js"></script>
+
     <link rel="stylesheet" href="css/page/project.css" />
 {% endblock %}
 
@@ -90,9 +95,12 @@
                              style="width: 60%;">
                         </div>
                     </div>
+
+                    <div id="load-error" class="alert alert-danger hidden"></div>
                 </div>
 
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-primary hidden" data-dismiss="modal" id="run">Run</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div><!-- /.modal-content -->

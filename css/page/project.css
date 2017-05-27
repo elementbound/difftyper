@@ -19,4 +19,7 @@
 #panel-files {
     height: 60%;
     width: 100%;
+
+    overflow-x: hidden;
+    overflow-y: scroll; 
 }
