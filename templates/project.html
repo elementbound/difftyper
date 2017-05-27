@@ -1,0 +1,70 @@
+{% extends "header.html" %}
+
+{% block head %}
+    <title>O shit fam</title>
+
+    <style>
+        div {
+            border: 1px solid black;
+        }
+
+        #pane-left {
+            height: 100vh;
+            width: 20vw;
+
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #pane-code {
+            height: 100vh;
+            width: 80vw;
+
+            position: absolute;
+            top: 0;
+            left: 20vw;
+        }
+
+        #panel-files {
+            height: 60%;
+            width: 100%;
+        }
+
+        .tab {
+            border-radius: 8px 8px 0 0;
+            border: 1px solid black;
+            padding: 4px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Left panel -->
+    <div id="pane-left">
+        <!-- Files -->
+        <div id="panel-files">
+            Files here
+        </div>
+
+        <!-- Commit data -->
+        <div>
+            All dem sweet commit data here
+        </div>
+    </div>
+
+    <!-- Content panel -->
+    <div id="pane-code">
+        <!-- Current file indicator -->
+        <div style="width: 100%;">
+            <span class="tab">
+                Current file
+            </span>
+        </div>
+
+        <!-- Code -->
+        <div>
+            Code, yo
+        </div>
+    </div>
+{% endblock %}

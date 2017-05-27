@@ -17,7 +17,9 @@ def page(what):
         'type': 'type.html',
         'tree': 'tree.html',
         'commit': 'commit.html',
-        'history': 'history.html'
+        'history': 'history.html',
+
+        'project': 'project.html'
     }
 
     try:
