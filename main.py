@@ -20,11 +20,10 @@ def page(what):
         'history': 'history.html'
     }
 
-    page = 'index.html'
     try:
         page = mapping[what]
     except KeyError:
-        pass
+        page = 'index.html'
 
     return flask.render_template(page, pages=mapping.keys())
 
@@ -33,16 +32,16 @@ def git_commits(path):
     try:
         git = Git(path)
         return json.dumps({'commits': git.commits()}, indent=4)
-    except:
-        return json.dumps({'error': True})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
 
 @app.route('/api/git/show/<commit>/<path:path>')
 def git_show(commit, path):
     try:
         git = Git(path)
         return json.dumps({'commit': git.show(commit)}, indent=4)
-    except:
-        return json.dumps({'error': True})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
 
 @app.route('/js/<path:path>')
 def serve_js(path):

@@ -14,7 +14,10 @@ class CommitDetailLoader {
         console.log('/api/git/commits/' + this.repository);
         $.getJSON('/api/git/commits/' + this.repository, function(data) {
             if(data.error) {
-                $(this).trigger('error');
+                $(this).trigger('error', {
+                    commit: '*',
+                    error: data.error
+                });
                 return true;
             }
 
@@ -32,12 +35,15 @@ class CommitDetailLoader {
             return false;
         }
 
-        let hash = this._to_load.shift();
+        var hash = this._to_load.shift();
 
         console.log('/' + ['api', 'git', 'show', hash, this.repository].join('/'));
         $.getJSON('/' + ['api', 'git', 'show', hash, this.repository].join('/'), function(data) {
             if(data.error) {
-                $(this).trigger('error');
+                $(this).trigger('error', {
+                    commit: hash,
+                    error: data.error
+                });
                 return true;
             }
 
@@ -58,30 +64,34 @@ class CommitDetailLoader {
 
 // p.s.: actually had to add time part myself
 function formatDate(datetime) {
-  var monthNames = [
-    "January", "February", "March",
-    "April", "May", "June", "July",
-    "August", "September", "October",
-    "November", "December"
-  ];
+    var monthNames = [
+        "January", "February", "March",
+        "April", "May", "June", "July",
+        "August", "September", "October",
+        "November", "December"
+    ];
 
-  var day = datetime.getDate();
-  var monthIndex = datetime.getMonth();
-  var year = datetime.getFullYear();
+    var day = datetime.getDate();
+    var monthIndex = datetime.getMonth();
+    var year = datetime.getFullYear();
 
-  let hour = datetime.getHours(); hour = hour < 10 ? '0'+hour : hour.toString();
-  let minute = datetime.getMinutes(); minute = minute < 10 ? '0'+minute : minute.toString();
-  let second = datetime.getSeconds(); second = second < 10 ? '0'+second : second.toString();
+    let hour = datetime.getHours(); hour = hour < 10 ? '0'+hour : hour.toString();
+    let minute = datetime.getMinutes(); minute = minute < 10 ? '0'+minute : minute.toString();
+    let second = datetime.getSeconds(); second = second < 10 ? '0'+second : second.toString();
 
-  let date = day + ' ' + monthNames[monthIndex].substr(0,3) + ' ' + year;
-  let time = [hour, minute, second].join(':');
+    let date = day + ' ' + monthNames[monthIndex].substr(0,3) + ' ' + year;
+    let time = [hour, minute, second].join(':');
 
-  return date + ' ' + time;
+    return date + ' ' + time;
 }
 
 $(document).ready(function() {
     /** Init **/
     $("#commit-progress")
+        .removeClass("hidden")
+        .hide();
+
+    $("#commit-error")
         .removeClass("hidden")
         .hide();
 
@@ -91,12 +101,16 @@ $(document).ready(function() {
         let loader = new CommitDetailLoader(repo);
 
         // Reset progressbar
-        $("#commit-progress").removeClass("progress-bar-danger");
         $("#commit-progress").slideDown();
-        $("#commit-progress>.progress-bar").css("width", 0);
+        $("#commit-progress>.progress-bar")
+            .css("width", 0)
+            .removeClass("progress-bar-danger");
 
         // Reset commits table
         $("#commits>tbody").empty();
+
+        // Reset error notif
+        $("#commit-error").hide();
 
         $(loader).on('progress', function(e, current, max) {
             $("#commit-progress>.progress-bar")
@@ -104,8 +118,7 @@ $(document).ready(function() {
                 .attr("aria-valuemax", max)
                 .attr("aria-valueat", current)
                 .css("width", (current / max)*100 + "%")
-                .find(".progress-label")
-                    .text(current + '/' + max);
+                .text(current + '/' + max);
         });
 
         $(loader).on('commit', function(e, commit) {
@@ -129,8 +142,21 @@ $(document).ready(function() {
             row.prependTo(tbody);
         });
 
-        $(loader).on('error', function(e) {
-            $("#commit-progress").addClass("progress-bar-danger");
+        $(loader).on('error', function(e, error) {
+            $("#commit-progress>.progress-bar")
+                .addClass("progress-bar-danger")
+                .css("width", "100%")
+                .text('Error');
+
+            $("#commit-error")
+                .html([
+                    ['Error: ', error.error].join(''),
+                    ['Commit: ', error.commit].join('')
+                ].join('<br/>\n'));
+
+            $("#commit-error").slideDown();
+
+            console.log(error);
         });
 
         $(loader).on('finish', function(e) {
