@@ -92,20 +92,20 @@ class Project {
     _op_commit(type, commit) {
         console.log('[op]commit:', commit);
         $(this).trigger('render-commit', [commit]);
-        $(this).trigger('step');
+        //$(this).trigger('step');
     }
 
     // ['add-file', file]
     _op_add_file(type, file) {
         this.tree.add(file.name);
         console.log('Added file:', file.name);
-        $(this).trigger('step');
+        //$(this).trigger('step');
     }
 
     // ['remove-file', file]
     _op_remove_file(type, file) {
         this.tree.remove(file.name);
-        $(this).trigger('step');
+        //$(this).trigger('step');
     }
 
     // ['open-file', file]
@@ -114,7 +114,7 @@ class Project {
 
         console.log(file.name, this.current_file);
         $(this).trigger('render-file', [file.name, this.current_file]);
-        $(this).trigger('step');
+        //$(this).trigger('step');
     }
 
     // ['type', file]
