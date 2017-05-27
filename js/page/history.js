@@ -85,6 +85,29 @@ function formatDate(datetime) {
     return date + ' ' + time;
 }
 
+function render_commit(commit) {
+    $("#commit-hash").text(commit.hash);
+    $("#commit-author").text(commit.author);
+    $("#commit-message").text(commit.message);
+
+    $("tr.commit-file").remove();
+
+    for(let i = 0; i < commit.files.length; i++) {
+        let row = $("<tr>")
+            .addClass("commit-file");
+
+        $("<td>")
+            .text(commit.files[i].mode)
+            .appendTo(row);
+
+        $("<td>")
+            .text(commit.files[i].name)
+            .appendTo(row);
+
+        $("#commit-files").append(row);
+    }
+}
+
 $(document).ready(function() {
     /** Init **/
     $("#commit-progress")
@@ -124,7 +147,8 @@ $(document).ready(function() {
         $(loader).on('commit', function(e, commit) {
             let tbody = $("#commits>tbody");
 
-            let row = $("<tr>");
+            let row = $("<tr>")
+                .css('cursor', 'pointer');
 
             // Commit, Message, Date
             $("<td>")
@@ -138,6 +162,8 @@ $(document).ready(function() {
             $("<td>")
                 .text(formatDate(commit.date))
                 .appendTo(row);
+
+            row.click(render_commit.bind(undefined, commit));
 
             row.prependTo(tbody);
         });
