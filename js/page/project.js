@@ -138,7 +138,7 @@ class Project {
             $(this).trigger('next-step');
         }.bind(this)); */
 
-        this.typer.run(1000/5);
+        this.typer.run(1000/20);
     }
 };
 
@@ -240,19 +240,25 @@ $(document).ready(function () {
     });
 
     /** Typer events **/
+    var measure = $("<pre>")
+        .appendTo($("body"))
+        .hide();
+
     $(project).on('render-code', function(e, lines) {
-        $('#code').text(lines.join('\n'));
+        let code = lines.join('\n');
+
+        $('#code').text(code);
         $('#code').removeClass('prettyprinted');
-        PR.prettyPrint();
+
+        if(code.length < 2048)
+            PR.prettyPrint();
 
         // Scroll to cursor
-        let font_size = $("#code").css("font-size");
-        font_size = /\d+/.exec(font_size)[0];
-        font_size = parseInt(font_size);
+        let ratio = project.typer._at / Math.max(project.typer.lines.length, 1);
+        let height = measure.text(code).height();
+        let to = ratio * height;
 
-        let to = font_size * project.typer._at;
-
-        console.log("Scrolling to", to);
+        console.log("Scrolling to", to, Math.round(ratio*100)+'%', height);
         $("#code").scrollTop(to);
     });
 
