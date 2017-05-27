@@ -63,6 +63,12 @@ class TreeNode {
 }
 
 class FileNode extends TreeNode {
+    constructor() {
+        super();
+
+        this.content = '';
+    }
+
     sort(recursive=false) {
         // Sort children alphabetically
         this._children.sort();
@@ -84,6 +90,13 @@ class FileNode extends TreeNode {
         if(recursive)
             for(let c of this.children())
                 c.sort(true);
+    }
+
+    name(v=undefined) {
+        if(v != undefined)
+            this.value = v;
+
+        return this.value;
     }
 }
 
@@ -169,7 +182,7 @@ class FileTree extends Tree {
                 return false;
             }
             else
-                at = next; 
+                at = next;
         }
 
         let removed = 0;
@@ -193,6 +206,27 @@ class FileTree extends Tree {
         // Return how many nodes we removed
         console.log('Removed', removed, 'nodes');
         return removed;
+    }
+
+    find(path) {
+        path = FileTree.parse_path(path);
+        let at = this._root;
+
+        for(let i = 0; i < path.length; i++) {
+            let part = path[i];
+            let next = at.find_by_value(part);
+
+            console.log('Jumping to', part, '->', next);
+            // Path doesn't exist in tree, bail
+            if(next == undefined) {
+                console.log('Path doesn\'t exist, bailing');
+                return undefined;
+            }
+            else
+                at = next;
+        }
+
+        return at; 
     }
 
     static parse_path(path) {

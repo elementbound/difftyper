@@ -99,3 +99,9 @@ if(!Array.prototype.empty)
     Array.prototype.empty = function() {
         return this.length == 0;
     }
+
+if(!Array.prototype.iterate)
+    Array.prototype.iterate = function*() {
+        for(let i = 0; i < this.length; ++i)
+            yield this[i];
+    }

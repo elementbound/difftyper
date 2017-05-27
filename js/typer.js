@@ -20,6 +20,10 @@ class Typer {
         this._state = 'stop';
     }
 
+    setlines(content) {
+        this.lines = content.split(/\n|\r\n/);
+    }
+
     newline() {
         if(this.lines.empty()) {
             this.lines.push('');

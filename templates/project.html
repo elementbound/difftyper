@@ -6,7 +6,6 @@
     <script src="js/typer.js"></script>
     <script src="js/tree.js"></script>
     <script src="js/commit.js"></script>
-    <script src="js/util.js"></script>
     <script src="js/page/project.js"></script>
 
     <link rel="stylesheet" href="css/page/project.css" />
@@ -19,7 +18,7 @@
         <div id="panel-files">
             <table id="filetree" class="table table-striped">
                 <thead>
-                    <tr><td>Files: </td></tr>
+                    <tr><td><b>Filetree:</b></td></tr>
                 </thead>
 
                 <tbody>
@@ -31,25 +30,35 @@
         <!-- Commit data -->
         <div>
             <table class="table table-striped" id="commit-data">
-                <tr>
-                    <td>commit</td>
-                    <td id="commit-hash"></td>
-                </tr>
+                <thead>
+                    <tr>
+                        <td colspan="2">
+                            <b>Commit data</b>
+                        </td>
+                    </tr>
+                </thead>
 
-                <tr>
-                    <td>Author: </td>
-                    <td id="commit-author"></td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td>commit</td>
+                        <td id="commit-hash"></td>
+                    </tr>
 
-                <tr>
-                    <td>Message: </td>
-                    <td></td>
-                </tr>
+                    <tr>
+                        <td>Author: </td>
+                        <td id="commit-author"></td>
+                    </tr>
 
-                <tr>
-                    <td colspan="2" class="preserve-ws" id="commit-message">
-                    </td>
-                </tr>
+                    <tr>
+                        <td>Message: </td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2" class="preserve-ws" id="commit-message">
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -58,14 +67,13 @@
     <div id="pane-code">
         <!-- Current file indicator -->
         <div style="width: 100%;">
-            <span class="btn btn-xs btn-default">
+            <span class="btn btn-xs btn-default" id="current-file">
                 Current file
             </span>
         </div>
 
         <!-- Code -->
-        <div>
-            Code, yo
+        <div class="preserve-ws well" id="code">
         </div>
     </div>
 
