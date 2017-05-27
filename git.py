@@ -24,8 +24,8 @@ class Git:
                             cwd = self.directory)
 
         # Passing encoding throws an unexpected kwarg error, so here's a workaround
-        r.stdout = r.stdout.decode('utf-8')
-        r.stderr = r.stderr.decode('utf-8')
+        r.stdout = r.stdout.decode('utf-8', errors='replace')
+        r.stderr = r.stderr.decode('utf-8', errors='replace')
 
         return r
 
