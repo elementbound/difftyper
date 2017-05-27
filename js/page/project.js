@@ -46,11 +46,8 @@ class Project {
         }
 
         // Run steps one by one
-        $(this).on('step', this.step);
-        $(this).on('step', function() {console.log('on Step');});
+        // $(this).on('step', this.step);
         this.step();
-
-        console.log('Subscribing on', $(this));
     }
 
     step() {
@@ -79,8 +76,6 @@ class Project {
         console.log('[op]commit:', commit);
         $(this).trigger('render-commit', [commit]);
         $(this).trigger('step');
-
-        console.log('Triggering on ', $(this));
     }
 
     // ['add-file', file]
@@ -102,6 +97,7 @@ class Project {
 
         console.log(file.name, this.current_file);
         $(this).trigger('render-file', [file.name, this.current_file]);
+        $(this).trigger('step');
     }
 
     // ['type', file]
@@ -110,9 +106,15 @@ class Project {
         this.typer.setlines(this.current_file.content);
         this.typer.add_diff(file.diff);
 
-        $(this.typer).on('finish', function() {
+        console.log('About to type');
+        console.log('Lines:', this.typer.lines);
+        console.log('Diff:', file.diff);
+
+        /* $(this.typer).on('finish', function() {
             $(this).trigger('step');
-        }.bind(this));
+        }.bind(this)); */
+
+        this.typer.run();
     }
 };
 
@@ -219,4 +221,8 @@ $(document).ready(function () {
         $("#current-file").text(name);
         $("#code").text(node.content);
     });
+
+    $("#step").click(function() {
+        project.step();
+    })
 });
