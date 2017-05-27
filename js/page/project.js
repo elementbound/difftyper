@@ -4,21 +4,23 @@ function manual_hide(selector) {
         .hide();
 }
 
-var Project = {
-    commits: [],
-    tree: new FileTree(),
-    typer: new Typer(),
-
-    current_file: undefined,
-
-    _queue: [],
-
-    reset: function() {
+class Project {
+    constructor() {
+        this.commits = [];
         this.tree = new FileTree();
         this.typer = new Typer();
-    },
 
-    run: function() {
+        this.current_file = undefined;
+
+        this._queue = [];
+    }
+
+    reset() {
+        this.tree = new FileTree();
+        this.typer = new Typer();
+    }
+
+    run() {
         // Query ops
         this._queue = [];
 
@@ -47,9 +49,11 @@ var Project = {
         $(this).on('step', this.step);
         $(this).on('step', function() {console.log('on Step');});
         this.step();
-    },
 
-    step: function() {
+        console.log('Subscribing on', $(this));
+    }
+
+    step() {
         if(this._queue.empty())
             return false;
 
@@ -64,39 +68,41 @@ var Project = {
             'type': this._op_type
         };
 
-        console.log('Calling', op_map[op[0]]);
-        op_map[op[0]](...op);
+        // This looks sick and I believe it should look sick
+        op_map[op[0]].bind(this)(...op);
 
         return true;
-    },
+    }
 
     // ['commit', commit]
-    _op_commit: function(type, commit) {
+    _op_commit(type, commit) {
         console.log('[op]commit:', commit);
-        $(Project).trigger('render-commit', [commit]);
-        $(Project).trigger('step');
-    },
+        $(this).trigger('render-commit', [commit]);
+        $(this).trigger('step');
+
+        console.log('Triggering on ', $(this));
+    }
 
     // ['add-file', file]
-    _op_add_file: function(type, file) {
+    _op_add_file(type, file) {
         this.tree.add(file.name);
         $(this).trigger('step');
-    },
+    }
 
     // ['remove-file', file]
-    _op_remove_file: function(type, file) {
+    _op_remove_file(type, file) {
         this.tree.remove(file.name);
         $(this).trigger('step');
-    },
+    }
 
     // ['open-file', file]
-    _op_open_file: function(type, file) {
+    _op_open_file(type, file) {
         this.current_file = this.tree.find(file.name);
         $(this).trigger('render-file', [file.name, this.current_file]);
-    },
+    }
 
     // ['type', file]
-    _op_type: function(type, file) {
+    _op_type(type, file) {
         this.typer.clear();
         this.typer.setlines(this.current_file.content);
         this.typer.add_diff(file.diff);
@@ -108,6 +114,8 @@ var Project = {
 };
 
 $(document).ready(function () {
+    let project = new Project();
+
     /** Init **/
     $("#startup-modal").modal();
 
@@ -159,7 +167,7 @@ $(document).ready(function () {
         });
 
         $(loader).on('commit', function(e, commit) {
-            Project.commits.push(commit);
+            project.commits.push(commit);
         });
 
         $(loader).on('finish', function(e) {
@@ -170,12 +178,12 @@ $(document).ready(function () {
     });
 
     $("#run").click(function() {
-        Project.run();
+        project.run();
     });
 
     /** Tree events **/
-    $(Project.tree).on('change', function() {
-        let tree = Project.tree;
+    $(project.tree).on('change', function() {
+        let tree = project.tree;
         let table = $("#filetree>tbody");
         table.empty();
 
@@ -191,20 +199,20 @@ $(document).ready(function () {
     });
 
     /** Typer events **/
-    $(Project.typer).on('present', function(e, lines) {
+    $(project.typer).on('present', function(e, lines) {
         $('#code').text(lines.join('\n'));
         $('#code').removeClass('prettyprinted');
         PR.prettyPrint();
     });
 
     /** Project events **/
-    $(Project).on('render-commit', function(e, commit) {
+    $(project).on('render-commit', function(e, commit) {
         $("#commit-hash").text(commit.hash);
         $("#commit-author").text(commit.author);
         $("#commit-message").text(commit.message);
     });
 
-    $(Project).on('render-file', function(e, name, node) {
+    $(project).on('render-file', function(e, name, node) {
         $("#current-file").text(name);
         $("#code").text(node.content);
     });
