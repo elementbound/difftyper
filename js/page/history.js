@@ -4,12 +4,8 @@ class CommitDetailLoader {
         this.commits = [];
 
         this._to_load = [];
-
-        this.query_list();
     }
 
-    // TODO: Make operations chainable in a nicer way
-    // ( what if we don't want to query commit data right away after the list? )
     query_list() {
         console.log('/api/git/commits/' + this.repository);
         $.getJSON('/api/git/commits/' + this.repository, function(data) {
@@ -22,10 +18,8 @@ class CommitDetailLoader {
             }
 
             this._to_load = data.commits;
+            console.log('Hashes to load:', this._to_load);
             $(this).trigger('list', [data.commits]);
-
-            $(this).trigger('progress', [0, this._to_load.length]);
-            this.query_next_commit();
         }.bind(this));
     }
 
@@ -51,10 +45,25 @@ class CommitDetailLoader {
             this.commits.push(commit);
 
             $(this).trigger('commit', commit);
-            $(this).trigger('progress', [this.commits.length, this.commits.length + this._to_load.length]);
-
-            this.query_next_commit();
         }.bind(this));
+    }
+
+    // Load all data
+    query_all() {
+        // Callbacks to keep it moving
+        $(this).on('list', this.query_next_commit);
+        $(this).on('commit', this.query_next_commit);
+
+        // Callbacks to update on progress
+        $(this).on('commit', function() {
+            $(this).trigger('progress', [this.commits.length, this.commits.length + this._to_load.length]);
+        }.bind(this));
+
+        $(this).on('list', function(e, commits) {
+            $(this).trigger('progress', [0, commits.length]);
+        }.bind(this));
+
+        this.query_list();
     }
 }
 
@@ -192,6 +201,6 @@ $(document).ready(function() {
             }, 1000);
         });
 
-        loader.query_list();
+        loader.query_all();
     });
 });
