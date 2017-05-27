@@ -92,6 +92,7 @@ function render_commit(commit) {
 
     $("tr.commit-file").remove();
 
+    console.log(commit.files);
     for(let i = 0; i < commit.files.length; i++) {
         let row = $("<tr>")
             .addClass("commit-file");
